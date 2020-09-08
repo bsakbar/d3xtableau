@@ -18,3 +18,4 @@
 - [HTTPS and security requirements](https://tableau.github.io/extensions-api/docs/trex_security.html)
 - [Get data from a worksheet](https://tableau.github.io/extensions-api/docs/trex_getdata.html)
 - [Publish a Dashboard Extension](https://tableau.github.io/extensions-api/docs/trex_publish.html)
+- [Debug Extensions in Tableau Desktop](https://tableau.github.io/extensions-api/docs/trex_debugging.html#download-the-chromium-browser)
