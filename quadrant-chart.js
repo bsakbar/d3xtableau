@@ -323,7 +323,7 @@
 
         const b_sizze = d3.scaleLinear()
             .domain(d3.extent(dataArr, b_size))
-            .range([35, 0.2])
+            .range([30, 50])
 
             function x_gridlines() {
               return d3.axisBottom(xScale)
@@ -364,7 +364,7 @@
             .attr("r", 0)
             .transition()
             .duration(700)
-            .attr("r", d => b_sizze(b_size(d)))
+            .attr("r", d => b_sizze(b_size(d))/2)
             .attr("fill", d => colorScale(colorAccessor(d)))
             .style("opacity", .9)
             // .style("mix-blend-mode", "multiply");
