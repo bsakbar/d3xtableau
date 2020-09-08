@@ -1,6 +1,6 @@
 # D3 X Tableau
 
-###[Get Started with Dashboard Extensions]###(https://tableau.github.io/extensions-api/docs/trex_getstarted.html)
+###[Get Started with Dashboard Extensions](https://tableau.github.io/extensions-api/docs/trex_getstarted.html)
 
 ### Files:
 1. first-test.trex
