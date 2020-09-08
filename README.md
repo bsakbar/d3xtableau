@@ -9,9 +9,9 @@
   <url>http://localhost:8765/Initiative/first-test/index.html</url></source-location>```
 - `<icon>`: If specified, the icon is what appears in the About dialog box. The icon must be a 70x70 pixel PNG file that is Base64 encoded. (I used their example icon).
 
-<br> 2. index.html
-<br> 3. quadrant-chart.js
-<br> 4. style.css
+2. index.html
+3. quadrant-chart.js
+4. style.css
 
 ### Useful Links:
 - [Get Started with Dashboard Extensions](https://tableau.github.io/extensions-api/docs/trex_getstarted.html)
