@@ -10,7 +10,8 @@ The extension manifest file that contains metadata for the extension and is used
 <br>`<source-location>
   <url>http://localhost:8765/Initiative/first-test/index.html</url>
 </source-location>`
-<br> `<icon>`: If specified, the icon is what appears in the About dialog box. The icon must be a 70x70 pixel PNG file that is Base64 encoded. (I used their example icon)
+<br> `<icon>`: If specified, the icon is what appears in the About dialog box. The icon must be a 70x70 pixel PNG file that is Base64 encoded. (I used their example icon).
+
 <br> 2. index.html
 <br> 3. quadrant-chart.js
 <br> 4. style.css
