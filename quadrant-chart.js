@@ -102,7 +102,9 @@
                     return cell.formattedValue;
                 });
                 return rowData;
+
             });
+
 
             const columns = worksheetData.columns.map(function(column) {
                 return {
@@ -110,37 +112,31 @@
                 };
 
             });
-            // console.log(columns);
 
-            let dataJson = {};
+            console.log(columns);
+
+            var dataArr = []
+            let dataJson;
             let i
             // console.log(data.columns)
             data.map(d => {
               // console.log('I am d',d)
-              if (!(d[0] in dataJson)){
-                dataJson[d[0]] = {}
-              }
-              dataJson[d[0]][d[2]] = d[3]
-
+              dataJson = {};
+              i=0;
+              columns.map(c =>{
+                dataJson[c.title] = d[i]; //1st column
+                // console.log(c.title, d[i])
+                i++
+              })
+                dataArr.push(dataJson);
             });
-            // consolex.log(dataJson);
 
-            var dataArr = []
-            var rowDataJson;
-
-            for (var key in dataJson){
-              rowDataJson = dataJson[key]
-              rowDataJson['AdGroup'] = key
-              dataArr.push(rowDataJson)
-
-            }
-
-            // console.log(dataArr)
-            drawDotChart(dataArr);
+            drawDotChart(data);
 
 
             // Populate the data table with the rows and columns we just pulled out
             populateDataTable(data, columns);
+
 
         });
 
@@ -149,6 +145,7 @@
             // When the selection changes, reload the data
             loadSelectedMarks(worksheetName);
         });
+
 
     }
 
@@ -251,41 +248,55 @@
 
     }
 
-
-    function drawDotChart(dataArr) {
+    function drawDotChart(dataArr, column) {
 
       $('#wrapper').empty();
-        const xAccessor = d => parseInt(d.eCPC.replace(/\$/g, ''));
-        const yAccessor = d => d.Clicks;
-        const colorAccessor = xAccessor;
-        const b_size = d => parseInt(d.Media_Spend.replace(/\$/g, ''));
-        // const b_size = d => parseInt(d);
+        const impression = d => d[4]
+        const xAccessor = d => parseInt(d[8].replace(/\$/g, ''));
+        const yAccessor = d => parseInt(d[4].replace(/,/g, ''));
+        const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        const b_size = d => parseInt(d[2].replace(/\$/g, ''));
+        const average_y = d => Math.round(d3.mean(dataArr, yAccessor));
+        const average_x = d => Math.round(d3.mean(dataArr, xAccessor));
+
+        function color_ind(average_y){
+          if (yAccessor <= average_y) {
+            return "#c74a65"
+          } else {
+            return "#4a9bc7"
+          }
+        }
+
+
+        // console.log()
+        // const colorAccessor = d => parseInt(d[4].replace(/\$/g, ''))
 
         const width = d3.min([
-            window.innerWidth *0.9,
+            window.innerWidth* 0.8  ,
         ])
 
         const height = d3.min([
-            window.innerHeight * 0.5,
+            window.innerHeight * 0.8,
         ])
 
         let dimensions = {
             width: width,
             height: height,
             margin: {
-                top: 50,
+                top: 30,
                 right: 50,
-                bottom: 50,
-                left: 50,
+                bottom: 40,
+                left: 100,
             },
         }
 
 
+
         // bubbles colors
 
-        const colorScale = d3.scaleLinear()
-            .domain(d3.extent(dataArr, colorAccessor))
-            .range(["#3771be", "#cf5976"])
+        // const colorScale = d3.scaleLinear()
+        //     .domain(d3.extent(dataArr, colorAccessor))
+        //     .range(["#3771be", "#cf5976"])
 
         dimensions.boundedWidth = dimensions.width -
             dimensions.margin.right -
@@ -321,18 +332,20 @@
             .range([dimensions.boundedHeight, 0])
             .nice()
 
+
+
         const b_sizze = d3.scaleLinear()
             .domain(d3.extent(dataArr, b_size))
-            .range([30, 50])
+            .range([20, 80])
 
             function x_gridlines() {
               return d3.axisBottom(xScale)
-              .ticks(7)
+              .ticks(10)
             }
 
             function y_gridlines() {
               return d3.axisLeft(yScale)
-              .ticks(12)
+              .ticks(5)
             }
 
             bounds.append("g")
@@ -351,6 +364,18 @@
                 )
 
 
+
+        // function color_ind(d) {
+        //   if (d[4] < average_y) {
+        //   return "red"
+        // }
+        //   else  {
+        //     return "blue"
+        //   }
+        // }
+
+
+
         let dots = bounds.selectAll("circle")
             .data(dataArr)
             .enter().append("circle")
@@ -358,16 +383,17 @@
         dots
             .transition()
             .duration(500)
-
             .attr("cx", d => xScale(xAccessor(d)))
             .attr("cy", d => yScale(yAccessor(d)))
             .attr("r", 0)
             .transition()
             .duration(700)
-            .attr("r", d => b_sizze(b_size(d))/2)
-            .attr("fill", d => colorScale(colorAccessor(d)))
+            .attr("r", d => b_sizze(b_size(d))/3)
+            // .attr("r", 10)
+
+            .attr("fill", color_ind)
             .style("opacity", .9)
-            // .style("mix-blend-mode", "multiply");
+            .style("mix-blend-mode", "multiply");
 
 
         dots.on("mouseover", function(d) {
@@ -376,10 +402,11 @@
                     .style("opacity", .9)
                 d3.select(this)
                     .style("opacity", .6)
-                    .attr("fill", d => colorScale(colorAccessor(d)))
+                    // .attr("fill", d => colorScale(colorAccessor(d)))
+                    .attr("fill", color_ind)
 
 
-                div.html("Ad Group:" + " " + d.AdGroup + "<br/>" + "eCPC" + ":" + " " + d.eCPC)
+                div.html("<b>" + d[0] +"</b>"  + "<br/>" + "Impressions: " + d[4] + "<br/>" + "Media Spend: " + d[2] + "<br/>" + "CPA: $" + Math.round(d[8]))
                     .style("left", (d3.event.pageX) + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
             })
@@ -390,14 +417,29 @@
                     .style("opacity", 0);
                 d3.select(this)
                     .style("opacity", 1)
-                    .attr("fill", d => colorScale(colorAccessor(d)))
+                    .attr("fill", color_ind)
+                    // .attr("fill", d => colorScale(colorAccessor(d)))
             });
 
 
         // axes
 
+
+        // function ticks(){
+        //   if (impression < 1e6){
+        //     return k => `${k + "K"}`
+        //   } else {
+        //     return m => `${m}`
+        //   }
+        // };
+
+
+
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
+            // .ticks(5)
+            .tickFormat(add_commas);
+            // .render()
 
         const yAxis = bounds.append("g")
             .call(yAxisGenerator)
@@ -405,9 +447,65 @@
             .attr("font-size", "10")
             .attr("text-align","left")
 
+        // average line
+
+        const avgLine_y = bounds.append("line")
+              .attr("y1", d => yScale(average_y(d)))
+              .attr("y2", d => yScale(average_y(d)))
+              .attr("x1", 0)
+              .attr("x2", dimensions.boundedWidth)
+              .attr("stroke", "green")
+              .attr("stroke-dasharray", "3px 3px")
+
+        const avgLine_x = bounds.append("line")
+              .attr("x1", d => xScale(average_x(d)))
+              .attr("x2", d => xScale(average_x(d)))
+              .attr("y1", 0)
+              .attr("y2", dimensions.boundedHeight)
+              .attr("stroke", "green")
+              .attr("stroke-dasharray", "3px 3px")
+
+          const avgLabel_y = bounds.append("text")
+               .attr("y", d => yScale(average_y(d)) +15)
+               .attr("x", 10)
+               .text(average_y)
+               .attr("fill", "black")
+               .style("font-size", "12px")
+               .attr("font-family", "Arial")
+
+         const avgLabel_y_2 = bounds.append("text")
+              .attr("y", d => yScale(average_y(d)) - 5)
+              .attr("x", 10)
+              .style("font-weight", "bold")
+              .text("Avg Imp:")
+              .attr("fill", "green")
+              .style("font-size", "12px")
+              .attr("font-family", "Arial")
+
+         const avgLabel_x = bounds.append("text")
+              .attr("x", d => xScale(average_x(d)) + 5)
+              .attr("y", 10)
+              .text("Avg CPA:")
+              .attr("fill", "green")
+              .style("font-size", "12px")
+              .style("font-weight", "bold")
+              .attr("font-family", "Arial")
+
+        const avgLabel_x_2 = bounds.append("text")
+             .attr("x", d => xScale(average_x(d)) + 5)
+             .attr("y", 25)
+             .text(average_x)
+             .attr("fill", "black")
+             .style("font-size", "12px")
+             .attr("font-family", "Arial")
+
+
+
+
+
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
-            .ticks(12, "$f")
+            .ticks(10, "$f")
 
         const xAxis = bounds.append("g")
             .call(xAxisGenerator)
@@ -423,7 +521,7 @@
             .style("font-family", "Arial")
             .style("font-size", "10")
             .style("font-weight", "bold")
-            .html("CPC")
+            .html("Cost per Action")
             .attr("fill", "black")
 
         const yAxisLabel = yAxis.append("text")
@@ -432,15 +530,17 @@
             .style("font-family", "Arial")
             .style("font-size", "10")
             .style("font-weight", "bold")
-            .html("Link Clicks")
+            .html("Impressions")
             .style("transform", "rotate(-90deg)")
             .style("text-anchor", "middle")
             .attr("fill", "black")
 
 
-
     }
 
 
+    // if (d[3].includes("Exceed")) return "#8ab562"
+    // if (d[3].includes("Meet")) return "#4a9bc7"
+    // if (d[3].includes ("Below")) return "#c74a65"
 
 })();
