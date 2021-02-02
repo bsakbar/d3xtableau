@@ -20,12 +20,51 @@ div.DTS div.dataTables_scrollBody {
 }
 
 .sheet_name {
-    font-size: 28px;
+    background-color: #1B2326;
+    font-size: 24px;
     font-family: "League Gothic";
-    text-transform: uppercase;
-    color: #5EC7EB!important;
+    /* text-transform: uppercase; */
+    color:white;
+    padding-left: 5px;
+    margin-top: -3px;
+    height: 32px;
+    display: flex;
+
 }
 
+.legends{
+  display: flex;
+  margin-top:10px;
+}
+
+.legend_name{
+  display: flex;
+  letter-spacing: -0.5px;
+  color: white;
+  font-family: "Arial";
+  font-size: 12px;
+  margin-left:5px;
+  /* margin-top: 10px; */
+}
+
+.legend_meet{
+  display: flex;
+  color: white;
+  background-color: #4e79a7;
+  height: 13px;
+  width:13px;
+  margin-left: 10px;
+  margin-top: 2px;
+}
+.legend_below{
+  display: flex;
+  color: white;
+  background-color: #e15759;
+  height: 13px;
+  width:13px;
+  margin-left: 10px;
+  margin-top: 2px;
+}
 .sheet_name_2 {
     /* font-size: 28px; */
     font-weight: bold;

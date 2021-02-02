@@ -1,278 +1,269 @@
 'use strict';
-
-// Wrap everything in an anonymous function to avoid polluting the global namespace
 (function() {
-    // Use the jQuery document ready signal to know when everything has been initialized
+
+  let removeEventListener;
+  let filteredColumns = [];
+
     $(document).ready(function() {
-        // Tell Tableau we'd like to initialize our extension
-        tableau.extensions.initializeAsync().then(function() {
-            // Fetch the saved sheet name from settings. This will be undefined if there isn't one configured yet
-            const savedSheetName = tableau.extensions.settings.get('sheet');
-            if (savedSheetName) {
-                // We have a saved sheet name, show its selected marks
-                loadSelectedMarks(savedSheetName);
-            } else {
-                // If there isn't a sheet saved in settings, show the dialog
-                showChooseSheetDialog();
-            }
-            initializeButtons();
+        tableau.extensions.initializeAsync({ configure: showChooseSheetDialog }).then(function() {
+          $('#reset_filters_button').click(resetFilters);
+          const savedSheetName = tableau.extensions.settings.get('sheet');
+          if (savedSheetName) {
+            loadSelectedMarks(savedSheetName);
+          } else {
+            showChooseSheetDialog();
+          }
+            // Since dataSource info is attached to the worksheet, we will perform
+            // one async call per worksheet to get every dataSource used in this
+            // dashboard.  This demonstrates the use of Promise.all to combine
+            // promises together and wait for each of them to resolve.
+            let dataSourceFetchPromises = [];
+
+            // Maps dataSource id to dataSource so we can keep track of unique dataSources.
+            let dashboardDataSources = {};
+
+            // To get dataSource info, first get the dashboard.
+            const dashboard = tableau.extensions.dashboardContent.dashboard;
+
+            // Then loop through each worksheet and get its dataSources, save promise for later.
+            dashboard.worksheets.forEach(function(worksheet) {
+                dataSourceFetchPromises.push(worksheet.getDataSourcesAsync());
+            });
+
+            Promise.all(dataSourceFetchPromises).then(function(fetchResults) {
+                fetchResults.forEach(function(dataSourcesForWorksheet) {
+                    dataSourcesForWorksheet.forEach(function(dataSource) {
+                        if (!dashboardDataSources[dataSource.id]) { // We've already seen it, skip it.
+                            dashboardDataSources[dataSource.id] = dataSource;
+                        }
+                    });
+                });
+
+
+
+
+                buildDataSourcesTable(dashboardDataSources);
+
+                var datasource = dashboardDataSources['federated.1cfcaj20zwyr8f1c3we6w0yu3sh4']
+                var dataArr = []
+
+                // console.log(datasource)
+                datasource.getUnderlyingDataAsync().then(data => {
+                    let dataJson;
+                    // console.log(data.columns)
+                    data.data.map(d => {
+                      dataJson = {};
+                      dataJson['impressions'] = d[88].value; //1st column
+                      dataJson['cpa'] = d[71].value; //2nd column
+                      dataJson['partner'] = d[23].value; //3rd column
+                      dataJson['media_spend'] = d[79].value; //4th column
+                        dataArr.push(dataJson);
+                    });
+
+                    // console.log(dataArr);
+
+                    let sums = {};
+                    let i;
+                    for (i = 0; i < dataArr.length; i++){
+
+                      var impressions = !isNaN(dataArr[i].impressions) ? dataArr[i].impressions : 0;
+                      var media_spend = !isNaN(dataArr[i].media_spend) ? dataArr[i].media_spend : 0;
+                      var cpa = !isNaN(dataArr[i].cpa) ? dataArr[i].cpa : 0;
+
+                      if (dataArr[i].partner in sums){
+                        sums[dataArr[i].partner]['impressions'] += impressions
+                        sums[dataArr[i].partner]['cpa'] += cpa
+                        sums[dataArr[i].partner]['media_spend'] += media_spend
+                    } else {
+                         sums[dataArr[i].partner] = {
+                           "impressions": impressions,
+                           "cpa": cpa,
+                           "media_spend": media_spend,
+                           "partner": dataArr[i].partner
+                        }
+                      }
+                    }
+                    // console.log(sums);
+
+                    var sumsArr = []
+                    for (const [key, value] of Object.entries(sums))
+                      sumsArr.push(value)
+
+                    // console.log(sumsArr)
+                    drawDotChart(sumsArr);
+                });
+
+                // This just modifies the UI by removing the loading banner and showing the dataSources table.
+                $('#loading').addClass('hidden');
+                $('#dataSourcesTable').removeClass('hidden').addClass('show');
+            });
+
+        }, function(err) {
+            // Something went wrong in initialization.
+            console.log('Error while Initializing: ' + err.toString());
         });
     });
 
-    /**
-     * Shows the choose sheet UI. Once a sheet is selected, the data table for the sheet is shown
-     */
     function showChooseSheetDialog() {
-        // Clear out the existing list of sheets
-        $('#choose_sheet_buttons').empty();
+    const dashboardName = tableau.extensions.dashboardContent.dashboard.name;
+    const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
 
-        // Set the dashboard's name in the title
-        const dashboardName = tableau.extensions.dashboardContent.dashboard.name;
-        $('#choose_sheet_title').text(dashboardName);
+    var worksheet = worksheets.find(function (sheet) {
+      return sheet.name === "Display Partner Performance";
+
+    });
+    const worksheetNames = worksheets.map((worksheet) => {
+      return worksheet.name;
+    });
+
+    demoHelpers.showDialog(dashboardName, worksheetNames, saveSheetAndLoadSelectedMarks);
+  }
 
 
-        // The first step in choosing a sheet will be asking Tableau what sheets are available
-        const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
 
-        // Next, we loop through all of these worksheets and add buttons for each one
-        worksheets.forEach(function(worksheet) {
-            // Declare our new button which contains the sheet name
-            const button = createButton(worksheet.name);
+  function loadSelectedMarks(worksheetName) {
+    if (removeEventListener) {
+      removeEventListener();
+    }
 
-            // Create an event handler for when this button is clicked
-            button.click(function() {
-                // Get the worksheet name and save it to settings.
-                filteredColumns = [];
-                const worksheetName = worksheet.name;
-                tableau.extensions.settings.set('sheet', worksheetName);
-                tableau.extensions.settings.saveAsync().then(function() {
-                    // Once the save has completed, close the dialog and show the data table for this worksheet
-                    $('#choose_sheet_dialog').modal('toggle');
-                    loadSelectedMarks(worksheetName);
-                });
-            });
+    const worksheet = demoHelpers.getSelectedSheet(worksheetName);
+    // console.log(worksheet)
 
-            // Add our button to the list of worksheets to choose from
-            $('#choose_sheet_buttons').append(button);
+    worksheet.getSelectedMarksAsync().then((marks) => {
+        demoHelpers.populateDataTable(marks, filterByColumn);
+    });
+
+    const marksSelectedEventHandler = (event) => {
+      loadSelectedMarks(worksheetName);
+    }
+    removeEventListener = worksheet.addEventListener(
+      tableau.TableauEventType.MarkSelectionChanged, marksSelectedEventHandler);
+  }
+
+  function saveSheetAndLoadSelectedMarks(worksheetName) {
+    tableau.extensions.settings.set('sheet', worksheetName);
+    tableau.extensions.settings.saveAsync();
+    loadSelectedMarks(worksheetName);
+  }
+
+  function filterByColumn(columnIndex, fieldName) {
+    const columnValues = demoHelpers.getValuesInColumn(columnIndex);
+    const worksheet = demoHelpers.getSelectedSheet(tableau.extensions.settings.get('sheet'));
+
+    worksheet.applyFilterAsync(fieldName, columnValues, tableau.FilterUpdateType.Replace);
+
+    filteredColumns.push(fieldName);
+  }
+
+  function resetFilters() {
+    const worksheet = demoHelpers.getSelectedSheet(tableau.extensions.settings.get('sheet'));
+    filteredColumns.forEach((columnName) => {
+        worksheet.clearFilterAsync(columnName);
+    });
+
+    filteredColumns = [];
+  }
+
+    // Refreshes the given dataSource.
+    function refreshDataSource(dataSource) {
+        dataSource.refreshAsync().then(function() {
+            console.log(dataSource.name + ': Refreshed Successfully');
+        });
+    }
+
+    // Displays a modal dialog with more details about the given dataSource.
+    function showModal(dataSource) {
+        let modal = $('#infoModal');
+
+        $('#nameDetail').text(dataSource.name);
+        $('#idDetail').text(dataSource.id);
+        $('#typeDetail').text((dataSource.isExtract) ? 'Extract' : 'Live');
+
+        // Loop through every field in the dataSource and concat it to a string.
+        let fieldNamesStr = '';
+        dataSource.fields.forEach(function(field) {
+            fieldNamesStr += field.name + ', ';
         });
 
+        // Slice off the last ", " for formatting.
+        $('#fieldsDetail').text(fieldNamesStr.slice(0, -2));
 
-        // Show the dialog
-        $('#choose_sheet_dialog').modal('toggle');
+        dataSource.getConnectionSummariesAsync().then(function(connectionSummaries) {
+            // Loop through each connection summary and list the connection's
+            // name and type in the info field
+            let connectionsStr = '';
+            connectionSummaries.forEach(function(summary) {
+                connectionsStr += summary.name + ': ' + summary.type + ', ';
+            });
+
+            // Slice of the last ", " for formatting.
+            $('#connectionsDetail').text(connectionsStr.slice(0, -2));
+        });
+
+        dataSource.getLogicalTablesAsync().then(function(activeTables) {
+            // Loop through each table that was used in creating this datasource
+            let tableStr = '';
+            activeTables.forEach(function(table) {
+                tableStr += table.name + ', ';
+            });
+
+            // Slice of the last ", " for formatting.
+            $('#activeTablesDetail').text(tableStr.slice(0, -2));
+        });
+
+        modal.modal('show');
     }
 
+    // Constructs UI that displays all the dataSources in this dashboard
+    // given a mapping from dataSourceId to dataSource objects.
+    function buildDataSourcesTable(dataSources) {
+        // Clear the table first.
+        $('#dataSourcesTable > tbody tr').remove();
+        const dataSourcesTable = $('#dataSourcesTable > tbody')[0];
 
+        // Add an entry to the dataSources table for each dataSource.
+        for (let dataSourceId in dataSources) {
+            const dataSource = dataSources[dataSourceId];
 
-    function createButton(buttonTitle) {
-        const button =
-            $(`<button type='button' class='btn btn-default btn-block'>
-      ${buttonTitle}
-    </button>`);
+            let newRow = dataSourcesTable.insertRow(dataSourcesTable.rows.length);
+            let nameCell = newRow.insertCell(0);
+            let refreshCell = newRow.insertCell(1);
+            let infoCell = newRow.insertCell(2);
 
-        return button;
-    }
+            let refreshButton = document.createElement('button');
+            refreshButton.innerHTML = ('Refresh Now');
+            refreshButton.type = 'button';
+            refreshButton.className = 'btn btn-primary';
+            refreshButton.addEventListener('click', function() {
+                refreshDataSource(dataSource);
+            });
 
-    // This variable will save off the function we can call to unregister listening to marks-selected events
-    let unregisterEventHandlerFunction;
+            let infoSpan = document.createElement('span');
+            infoSpan.className = 'glyphicon glyphicon-info-sign';
+            infoSpan.addEventListener('click', function() {
+                showModal(dataSource);
+            });
 
-    function loadSelectedMarks(worksheetName) {
-        // Remove any existing event listeners
-        if (unregisterEventHandlerFunction) {
-            unregisterEventHandlerFunction();
+            nameCell.innerHTML = dataSource.name;
+            refreshCell.appendChild(refreshButton);
+            infoCell.appendChild(infoSpan);
         }
-
-        // Get the worksheet object we want to get the selected marks for
-        const worksheet = getSelectedSheet(worksheetName);
-
-        // console.log(worksheet.parentDashboard.objects[0]);
-        // console.log(worksheet);
-
-        // Set our title to an appropriate value
-        $('#selected_marks_title').text(worksheet.name);
-
-        // Call to get the selected marks for our sheet
-        worksheet.getSelectedMarksAsync().then(function(marks) {
-            // Get .the first DataTable for our selected marks (usually there is just one)
-            const worksheetData = marks.data[0];
-            // console.log(worksheetData);
-
-            // Map our data into the format which the data table component expects it
-            const data = worksheetData.data.map(function(row, index) {
-                const rowData = row.map(function(cell) {
-                    return cell.formattedValue;
-                });
-                return rowData;
-
-            });
-
-
-            const columns = worksheetData.columns.map(function(column) {
-                return {
-                    title: column.fieldName
-                };
-
-            });
-
-            console.log(columns);
-
-            var dataArr = []
-            let dataJson;
-            let i
-            // console.log(data.columns)
-            data.map(d => {
-              // console.log('I am d',d)
-              dataJson = {};
-              i=0;
-              columns.map(c =>{
-                dataJson[c.title] = d[i]; //1st column
-                // console.log(c.title, d[i])
-                i++
-              })
-                dataArr.push(dataJson);
-            });
-
-            drawDotChart(data);
-
-
-            // Populate the data table with the rows and columns we just pulled out
-            populateDataTable(data, columns);
-
-
-        });
-
-        // Add an event listener for the selection changed event on this sheet.
-        unregisterEventHandlerFunction = worksheet.addEventListener(tableau.TableauEventType.MarkSelectionChanged, function(selectionEvent) {
-            // When the selection changes, reload the data
-            loadSelectedMarks(worksheetName);
-        });
-
-
     }
 
-    function populateDataTable(data, columns) {
-        // Do some UI setup here: change the visible section and reinitialize the table
-        $('#data_table_wrapper').empty();
-
-        if (data.length > 0) {
-            $('#no_data_message').css('display', 'none');
-            $('#data_table_wrapper').append(`<table id='data_table' class='table table-striped table-bordered'></table>`);
-
-            // Do some math to compute the height we want the data table to be
-            var top = $('#data_table_wrapper')[0].getBoundingClientRect().top;
-            var height = $(document).height() - top - 130;
-
-            const headerCallback = function(thead, data) {
-                const headers = $(thead).find('th');
-                for (let i = 0; i < headers.length; i++) {
-                    const header = $(headers[i]);
-                    if (header.children().length === 0) {
-                        const fieldName = header.text();
-                        const button = $(`<a href='#'>${fieldName}</a>`);
-                        button.click(function() {
-                            filterByColumn(i, fieldName);
-                        });
-
-                        header.html(button);
-                    }
-
-                }
-            };
-
-
-
-            // Initialize our data table with what we just gathered
-            $('#data_table').DataTable({
-                data: data,
-                columns: columns,
-                autoWidth: false,
-                deferRender: true,
-                scroller: true,
-                scrollY: true,
-                scrollX: false,
-                headerCallback: headerCallback,
-                dom: "<'row'<'col-sm-6'i><'col-sm-6'f>><'row'<'col-sm-12'tr>>" // Do some custom styling
-            });
-        } else {
-            // If we didn't get any rows back, there must be no marks selected
-            $('#no_data_message').css('display', 'inline');
-        }
-
-    }
-
-
-
-    function initializeButtons() {
-        $('#show_choose_sheet_button').click(showChooseSheetDialog);
-        $('#reset_filters_button').click(resetFilters);
-    }
-
-    // Save the columns we've applied filters to so we can reset them
-    let filteredColumns = [];
-
-    function filterByColumn(columnIndex, fieldName) {
-        // Grab our column of data from the data table and filter out to just unique values
-        const dataTable = $('#data_table').DataTable({
-            retrieve: true
-        });
-        const column = dataTable.column(columnIndex);
-        const columnDomain = column.data().toArray().filter(function(value, index, self) {
-            return self.indexOf(value) === index;
-
-        });
-
-
-        const worksheet = getSelectedSheet(tableau.extensions.settings.get('sheet'));
-        worksheet.applyFilterAsync(fieldName, columnDomain, tableau.FilterUpdateType.Replace);
-        filteredColumns.push(fieldName);
-        return false;
-    }
-
-    function resetFilters() {
-        const worksheet = getSelectedSheet(tableau.extensions.settings.get('sheet'));
-        filteredColumns.forEach(function(columnName) {
-            worksheet.clearFilterAsync(columnName);
-        });
-
-        filteredColumns = [];
-    }
-
-    function getSelectedSheet(worksheetName) {
-        if (!worksheetName) {
-            worksheetName = tableau.extensions.settings.get('sheet');
-        }
-
-        // Go through all the worksheets in the dashboard and find the one we want
-        return tableau.extensions.dashboardContent.dashboard.worksheets.find(function(sheet) {
-            return sheet.name === worksheetName;
-        });
-
-    }
-
-    function drawDotChart(dataArr, column) {
+    function drawDotChart(sumsArr) {
 
       $('#wrapper').empty();
-        const impression = d => d[4]
-        const xAccessor = d => parseInt(d[8].replace(/\$/g, ''));
-        const yAccessor = d => parseInt(d[4].replace(/,/g, ''));
+        // const impression = d => d.impressions
+        const xAccessor = d => d.cpa
+        const yAccessor =  d => d.impressions
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        const b_size = d => parseInt(d[2].replace(/\$/g, ''));
-        const average_y = d => Math.round(d3.mean(dataArr, yAccessor));
-        const average_x = d => Math.round(d3.mean(dataArr, xAccessor));
+        const b_size = d => d.media_spend
+        const average_y = d => Math.round(d3.mean(sumsArr, yAccessor));
+        const average_x = d => Math.round(d3.mean(sumsArr, xAccessor));
 
-        function color_ind(average_y){
-          if (yAccessor <= average_y) {
-            return "#c74a65"
-          } else {
-            return "#4a9bc7"
-          }
-        }
-
-
-        // console.log()
-        // const colorAccessor = d => parseInt(d[4].replace(/\$/g, ''))
 
         const width = d3.min([
-            window.innerWidth* 0.8  ,
+            window.innerWidth  ,
         ])
 
         const height = d3.min([
@@ -286,17 +277,9 @@
                 top: 30,
                 right: 50,
                 bottom: 40,
-                left: 100,
+                left: 80,
             },
         }
-
-
-
-        // bubbles colors
-
-        // const colorScale = d3.scaleLinear()
-        //     .domain(d3.extent(dataArr, colorAccessor))
-        //     .range(["#3771be", "#cf5976"])
 
         dimensions.boundedWidth = dimensions.width -
             dimensions.margin.right -
@@ -323,19 +306,19 @@
             .style("opacity", 0);
 
         const xScale = d3.scaleLinear()
-            .domain(d3.extent(dataArr, xAccessor))
+            .domain(d3.extent(sumsArr, xAccessor))
             .range([0, dimensions.boundedWidth])
             .nice()
 
         const yScale = d3.scaleLinear()
-            .domain(d3.extent(dataArr, yAccessor))
+            .domain(d3.extent(sumsArr, yAccessor))
             .range([dimensions.boundedHeight, 0])
             .nice()
 
 
 
         const b_sizze = d3.scaleLinear()
-            .domain(d3.extent(dataArr, b_size))
+            .domain(d3.extent(sumsArr, b_size))
             .range([20, 80])
 
             function x_gridlines() {
@@ -365,19 +348,18 @@
 
 
 
-        // function color_ind(d) {
-        //   if (d[4] < average_y) {
-        //   return "red"
-        // }
-        //   else  {
-        //     return "blue"
-        //   }
-        // }
+        function color_ind(d){
+          if (yAccessor(d) < average_y(d)) {
+            return "#e15759"
+          } else {
+            return "#4e79a7"
+          };
+        }
 
 
 
         let dots = bounds.selectAll("circle")
-            .data(dataArr)
+            .data(sumsArr)
             .enter().append("circle")
 
         dots
@@ -406,7 +388,7 @@
                     .attr("fill", color_ind)
 
 
-                div.html("<b>" + d[0] +"</b>"  + "<br/>" + "Impressions: " + d[4] + "<br/>" + "Media Spend: " + d[2] + "<br/>" + "CPA: $" + Math.round(d[8]))
+                div.html(d.partner + "<br/>" + "Impressions: " + add_commas(d.impressions) + "<br/>" + "Media Spend: $" + add_commas(Math.round(d.media_spend)) + "<br/>" + "CPA: $" + add_commas(Math.round(d.cpa)))
                     .style("left", (d3.event.pageX) + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
             })
@@ -437,7 +419,7 @@
 
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
-            // .ticks(5)
+            .ticks(5)
             .tickFormat(add_commas);
             // .render()
 
@@ -468,7 +450,7 @@
           const avgLabel_y = bounds.append("text")
                .attr("y", d => yScale(average_y(d)) +15)
                .attr("x", 10)
-               .text(average_y)
+               .text(d => add_commas(average_y(d)))
                .attr("fill", "black")
                .style("font-size", "12px")
                .attr("font-family", "Arial")
@@ -494,7 +476,7 @@
         const avgLabel_x_2 = bounds.append("text")
              .attr("x", d => xScale(average_x(d)) + 5)
              .attr("y", 25)
-             .text(average_x)
+             .text(d=>(add_commas(average_x(d))))
              .attr("fill", "black")
              .style("font-size", "12px")
              .attr("font-family", "Arial")
@@ -505,7 +487,8 @@
 
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
-            .ticks(10, "$f")
+            .ticks(5,"$f")
+            // .tickFormat(add_commas)
 
         const xAxis = bounds.append("g")
             .call(xAxisGenerator)
