@@ -305,7 +305,7 @@
         ])
 
         const height = d3.min([
-            window.innerHeight * 0.8,
+            window.innerHeight * 0.9,
         ])
 
         let dimensions = {
@@ -315,7 +315,7 @@
                 top: 30,
                 right: 50,
                 bottom: 40,
-                left: 100,
+                left: 80,
             },
         }
 
@@ -366,7 +366,7 @@
 
             function y_gridlines() {
               return d3.axisLeft(yScale)
-              .ticks(20)
+              .ticks(10)
             }
 
             bounds.append("g")
@@ -389,7 +389,7 @@
         function color_ind(d){
           if (yAccessor(d) < average_y(d)) {
             return "#e15759"
-          } else if (yAccessor(d) > average_y(d) && xAccessor(d) < average_x(d) ){
+          } else if (yAccessor(d) >= average_y(d) && xAccessor(d) <= average_x(d) ){
             return "#8ab562"
           } else {
             return "#4e79a7"
@@ -456,10 +456,12 @@
 
 
 
+        const remove_zero = d => (d / 1e6) + "M";
+
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
             .ticks(10)
-            .tickFormat(add_commas);
+            .tickFormat(remove_zero);
             // .render()
 
         const yAxis = bounds.append("g")
@@ -522,11 +524,11 @@
 
 
 
-
+        const add_sign = d => "$" + add_commas(d);
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
-            .ticks(10,"$f")
-            // .tickFormat(add_commas)
+            .ticks(10)
+            .tickFormat(add_sign)
 
         const xAxis = bounds.append("g")
             .call(xAxisGenerator)
