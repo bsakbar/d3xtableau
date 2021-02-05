@@ -7,7 +7,7 @@
     $(document).ready(function() {
         tableau.extensions.initializeAsync({ configure: showChooseSheetDialog }).then(function() {
           $('#reset_filters_button').click(resetFilters);
-          const savedSheetName = tableau.extensions.settings.get('sheet');
+          const savedSheetName = "Display Partner Performance"
           if (savedSheetName) {
             loadSelectedMarks(savedSheetName);
           } else {
@@ -24,6 +24,7 @@
 
             // To get dataSource info, first get the dashboard.
             const dashboard = tableau.extensions.dashboardContent.dashboard;
+
 
             // Then loop through each worksheet and get its dataSources, save promise for later.
             dashboard.worksheets.forEach(function(worksheet) {
@@ -53,10 +54,10 @@
                     // console.log(data.columns)
                     data.data.map(d => {
                       dataJson = {};
-                      dataJson['impressions'] = d[88].value; //1st column
-                      dataJson['cpa'] = d[71].value; //2nd column
-                      dataJson['partner'] = d[23].value; //3rd column
-                      dataJson['media_spend'] = d[79].value; //4th column
+                      // dataJson['impressions'] = d[88].value; //1st column
+                      // dataJson['cpa'] = d[71].value; //2nd column
+                      // dataJson['partner'] = d[23].value; //3rd column
+                      // dataJson['media_spend'] = d[79].value; //4th column
                         dataArr.push(dataJson);
                     });
 
@@ -90,7 +91,6 @@
                       sumsArr.push(value)
 
                     // console.log(sumsArr)
-                    drawDotChart(sumsArr);
                 });
 
                 // This just modifies the UI by removing the loading banner and showing the dataSources table.
@@ -112,6 +112,8 @@
       return sheet.name === "Display Partner Performance";
 
     });
+
+
     const worksheetNames = worksheets.map((worksheet) => {
       return worksheet.name;
     });
@@ -127,7 +129,35 @@
     }
 
     const worksheet = demoHelpers.getSelectedSheet(worksheetName);
-    // console.log(worksheet)
+
+
+    // After getting the worksheet,
+     // get the summary data for the sheet
+     worksheet.getSummaryDataAsync().then(function (sumdata) {
+
+      const worksheetData = sumdata;
+
+      console.log(worksheetData)
+
+      let newArr = [];
+      let dataJson;
+      worksheetData.data.map(d => {
+        dataJson = {};
+        dataJson['impressions'] = d[8].value; //1st column
+        dataJson['cpa'] = d[2].value; //2nd column
+        dataJson['partner'] = d[0].value; //3rd column
+        dataJson['media_spend'] = d[6].value; //4th column
+        dataJson['imp_average'] = d[7].value;
+        dataJson['cpa_average'] = d[5].value;
+          newArr.push(dataJson);
+          // console.log(dataJson)
+      });
+
+      console.log(newArr);
+
+      drawDotChart(newArr);
+
+     });
 
     worksheet.getSelectedMarksAsync().then((marks) => {
         demoHelpers.populateDataTable(marks, filterByColumn);
@@ -250,20 +280,28 @@
         }
     }
 
-    function drawDotChart(sumsArr) {
+    function drawDotChart(arr) {
 
       $('#wrapper').empty();
-        // const impression = d => d.impressions
+        const partner = d=> d.partner
         const xAccessor = d => d.cpa
         const yAccessor =  d => d.impressions
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const b_size = d => d.media_spend
-        const average_y = d => Math.round(d3.mean(sumsArr, yAccessor));
-        const average_x = d => Math.round(d3.mean(sumsArr, xAccessor));
+        // const average_y = d => d.imp_average
+        // const average_y = d => d3.mean(arr, yAccessor)
+        // const average_x = d => d.cpa_average
+        // const average_x = d => d3.mean(arr, xAccessor)
+
+        const average_y = d => Math.round(d3.mean(arr, yAccessor));
+        const average_x = d => Math.round(d3.mean(arr, xAccessor));
+
+        // const average_y = d => d3.sum(yAccessor) / d3.count(partner);
+        // const average_x = d => d3.sum(xAccessor) / d3.count(partner);
 
 
         const width = d3.min([
-            window.innerWidth  ,
+            window.innerWidth * 0.9,
         ])
 
         const height = d3.min([
@@ -277,7 +315,7 @@
                 top: 30,
                 right: 50,
                 bottom: 40,
-                left: 80,
+                left: 100,
             },
         }
 
@@ -306,20 +344,20 @@
             .style("opacity", 0);
 
         const xScale = d3.scaleLinear()
-            .domain(d3.extent(sumsArr, xAccessor))
+            .domain(d3.extent(arr, xAccessor))
             .range([0, dimensions.boundedWidth])
             .nice()
 
         const yScale = d3.scaleLinear()
-            .domain(d3.extent(sumsArr, yAccessor))
+            .domain(d3.extent(arr, yAccessor))
             .range([dimensions.boundedHeight, 0])
             .nice()
 
 
 
         const b_sizze = d3.scaleLinear()
-            .domain(d3.extent(sumsArr, b_size))
-            .range([20, 80])
+            .domain(d3.extent(arr, b_size))
+            .range([10, 60])
 
             function x_gridlines() {
               return d3.axisBottom(xScale)
@@ -328,7 +366,7 @@
 
             function y_gridlines() {
               return d3.axisLeft(yScale)
-              .ticks(5)
+              .ticks(20)
             }
 
             bounds.append("g")
@@ -351,6 +389,8 @@
         function color_ind(d){
           if (yAccessor(d) < average_y(d)) {
             return "#e15759"
+          } else if (yAccessor(d) > average_y(d) && xAccessor(d) < average_x(d) ){
+            return "#8ab562"
           } else {
             return "#4e79a7"
           };
@@ -359,7 +399,7 @@
 
 
         let dots = bounds.selectAll("circle")
-            .data(sumsArr)
+            .data(arr)
             .enter().append("circle")
 
         dots
@@ -387,10 +427,9 @@
                     // .attr("fill", d => colorScale(colorAccessor(d)))
                     .attr("fill", color_ind)
 
-
                 div.html(d.partner + "<br/>" + "Impressions: " + add_commas(d.impressions) + "<br/>" + "Media Spend: $" + add_commas(Math.round(d.media_spend)) + "<br/>" + "CPA: $" + add_commas(Math.round(d.cpa)))
-                    .style("left", (d3.event.pageX) + "px")
-                    .style("top", (d3.event.pageY - 28) + "px");
+                        .style("left", (d3.event.pageX) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
             })
 
             .on("mouseout", function(d) {
@@ -419,7 +458,7 @@
 
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
-            .ticks(5)
+            .ticks(10)
             .tickFormat(add_commas);
             // .render()
 
@@ -484,10 +523,9 @@
 
 
 
-
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
-            .ticks(5,"$f")
+            .ticks(10,"$f")
             // .tickFormat(add_commas)
 
         const xAxis = bounds.append("g")
