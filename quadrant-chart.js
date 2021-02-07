@@ -284,7 +284,7 @@
 
       $('#wrapper').empty();
         const partner = d=> d.partner
-        const xAccessor = d => d.cpa
+        const xAccessor = d => Math.round(d.cpa)
         const yAccessor =  d => d.impressions
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const b_size = d => d.media_spend
@@ -294,7 +294,7 @@
         // const average_x = d => d3.mean(arr, xAccessor)
 
         const average_y = d => Math.round(d3.mean(arr, yAccessor));
-        const average_x = d => Math.round(d3.mean(arr, xAccessor));
+        const average_x = d => d3.mean(arr, xAccessor);
 
         // const average_y = d => d3.sum(yAccessor) / d3.count(partner);
         // const average_x = d => d3.sum(xAccessor) / d3.count(partner);
@@ -357,7 +357,7 @@
 
         const b_sizze = d3.scaleLinear()
             .domain(d3.extent(arr, b_size))
-            .range([10, 60])
+            .range([10, 70])
 
             function x_gridlines() {
               return d3.axisBottom(xScale)
@@ -409,7 +409,7 @@
             .attr("cy", d => yScale(yAccessor(d)))
             .attr("r", 0)
             .transition()
-            .duration(700)
+            .duration(900)
             .attr("r", d => b_sizze(b_size(d))/3)
             // .attr("r", 10)
 
@@ -426,6 +426,7 @@
                     .style("opacity", .6)
                     // .attr("fill", d => colorScale(colorAccessor(d)))
                     .attr("fill", color_ind)
+
 
                 div.html(d.partner + "<br/>" + "Impressions: " + add_commas(d.impressions) + "<br/>" + "Media Spend: $" + add_commas(Math.round(d.media_spend)) + "<br/>" + "CPA: $" + add_commas(Math.round(d.cpa)))
                         .style("left", (d3.event.pageX) + "px")
@@ -488,22 +489,13 @@
               .attr("stroke", "green")
               .attr("stroke-dasharray", "3px 3px")
 
-          const avgLabel_y = bounds.append("text")
-               .attr("y", d => yScale(average_y(d)) +15)
-               .attr("x", 10)
-               .text(d => add_commas(average_y(d)))
-               .attr("fill", "black")
-               .style("font-size", "12px")
-               .attr("font-family", "Arial")
 
-         const avgLabel_y_2 = bounds.append("text")
-              .attr("y", d => yScale(average_y(d)) - 5)
-              .attr("x", 10)
-              .style("font-weight", "bold")
-              .text("Avg Imp:")
-              .attr("fill", "green")
-              .style("font-size", "12px")
-              .attr("font-family", "Arial")
+               //
+               // avgLabel_y
+               // .transition()
+               // .duration(2000)
+               // .textTween(() => d => `${d.toFixed(3)}`)
+
 
          const avgLabel_x = bounds.append("text")
               .attr("x", d => xScale(average_x(d)) + 5)
@@ -514,13 +506,70 @@
               .style("font-weight", "bold")
               .attr("font-family", "Arial")
 
-        const avgLabel_x_2 = bounds.append("text")
-             .attr("x", d => xScale(average_x(d)) + 5)
-             .attr("y", 25)
-             .text(d=>(add_commas(average_x(d))))
-             .attr("fill", "black")
-             .style("font-size", "12px")
-             .attr("font-family", "Arial")
+
+         var roundNo = d3.format("$.1f");
+         const avgLabel_x_2 = bounds
+               .append("g")
+
+               avgLabel_x_2
+               .selectAll("text")
+               .data(arr)
+               .enter()
+               .append("text")
+               .text( d => average_x(d))
+               .attr("x", d => xScale(average_x(d)) + 5)
+               .attr("y", 25)
+               .attr("opacity", 0)
+              .style("font-size", "12px")
+              .attr("font-family", "Arial")
+               .attr("fill","#1B2326")
+                 .transition()
+                 .duration(1500)
+                 .delay(300)
+               .attr("opacity", .6)
+               .tween("text", function(d) {
+                 var i = d3.interpolate(0, average_x(d));
+                 return function(t) {
+                   d3.select(this).text(roundNo(i(t)));
+                 };
+               });
+
+               const avgLabel_y = bounds.append("text")
+                    .attr("y", d => yScale(average_y(d)) - 5)
+                    .attr("x", 10)
+                    .style("font-weight", "bold")
+                    .text("Avg Imp:")
+                    .attr("fill", "green")
+                    .style("font-size", "12px")
+                    .attr("font-family", "Arial")
+
+              var roundNo_2 = d3.format(",.1f");
+
+              const avgLabel_y_2 = bounds
+                    .append("g")
+
+                    avgLabel_y_2
+                    .selectAll("text")
+                    .data(arr)
+                    .enter()
+                    .append("text")
+                    .text( d => average_y(d))
+                    .attr("y", d => yScale(average_y(d)) + 15)
+                    .attr("x", 10)
+                    .attr("opacity", 0)
+                   .style("font-size", "12px")
+                   .attr("font-family", "Arial")
+                    .attr("fill","#1B2326")
+                      .transition()
+                      .duration(1500)
+                      .delay(300)
+                    .attr("opacity", .6)
+                    .tween("text", function(d) {
+                      var i = d3.interpolate(0, average_y(d));
+                      return function(t) {
+                        d3.select(this).text(roundNo_2(i(t)));
+                      };
+                    });
 
 
 
