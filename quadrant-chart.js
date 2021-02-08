@@ -543,7 +543,7 @@
                     .style("font-size", "12px")
                     .attr("font-family", "Arial")
 
-              var roundNo_2 = d3.format(",.1f");
+              var roundNo_2 = d3.format(".2s");
 
               const avgLabel_y_2 = bounds
                     .append("g")
