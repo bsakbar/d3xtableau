@@ -7,7 +7,7 @@
     $(document).ready(function() {
         tableau.extensions.initializeAsync({ configure: showChooseSheetDialog }).then(function() {
           $('#reset_filters_button').click(resetFilters);
-          const savedSheetName = "Display Partner Performance"
+          const savedSheetName = "D3 DATA"
           if (savedSheetName) {
             loadSelectedMarks(savedSheetName);
           } else {
@@ -110,7 +110,7 @@
 
 
     var worksheet = worksheets.find(function (sheet) {
-      return sheet.name === "Display Partner Performance";
+      return sheet.name === "D3 DATA";
 
     });
 
@@ -157,40 +157,34 @@
     //     });
     //
     //  });
-
     // After getting the worksheet,
      // get the summary data for the sheet
-     let newArr = [];
      const worksheet = demoHelpers.getSelectedSheet(worksheetName);
      const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
 
-     for (let i=0; i < worksheets.length; i++){
-       worksheets[i].getSummaryDataAsync().then(function (sumdata) {
-
+     // for (let i=0; i < worksheets.length; i++){
+       worksheet.getSummaryDataAsync().then(function (sumdata) {
         const worksheetData = sumdata;
-        console.log(worksheetData.columns)
-        for (let j=0; j< worksheetData.columns.length; j++){
-          console.log(worksheetData.columns[j].fieldName)
-        }
+        console.log(worksheetData)
 
-
+        let newArr = [];
         let dataJson;
         worksheetData.data.map(d => {
           dataJson = {};
-          dataJson['impressions'] = d[8].value; //1st column
-          dataJson['cpa'] = d[2].value; //2nd column
+          dataJson['impressions'] = d[6].value; //1st column
+          dataJson['cpa'] = d[1].value; //2nd column
           dataJson['partner'] = d[0].value; //3rd column
-          dataJson['media_spend'] = d[6].value; //4th column
-          dataJson['imp_average'] = d[7].value;
-          dataJson['cpa_average'] = d[5].value;
+          dataJson['media_spend'] = d[4].value; //4th column
+          dataJson['imp_average'] = d[5].value;
+          dataJson['cpa_average'] = d[3].value;
             newArr.push(dataJson);
         });
-        // console.log(newArr);
+        console.log(newArr);
 
         drawDotChart(newArr);
 
        });
-     }
+
 
     worksheet.getSelectedMarksAsync().then((marks) => {
         demoHelpers.populateDataTable(marks, filterByColumn);
