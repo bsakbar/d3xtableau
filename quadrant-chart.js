@@ -25,11 +25,14 @@
             // To get dataSource info, first get the dashboard.
             const dashboard = tableau.extensions.dashboardContent.dashboard;
 
+            // console.log(dashboard)
 
             // Then loop through each worksheet and get its dataSources, save promise for later.
             dashboard.worksheets.forEach(function(worksheet) {
                 dataSourceFetchPromises.push(worksheet.getDataSourcesAsync());
             });
+
+
 
             Promise.all(dataSourceFetchPromises).then(function(fetchResults) {
                 fetchResults.forEach(function(dataSourcesForWorksheet) {
@@ -39,8 +42,6 @@
                         }
                     });
                 });
-
-
 
 
                 buildDataSourcesTable(dashboardDataSources);
@@ -106,7 +107,7 @@
 
     function showChooseSheetDialog() {
     const dashboardName = tableau.extensions.dashboardContent.dashboard.name;
-    const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
+
 
     var worksheet = worksheets.find(function (sheet) {
       return sheet.name === "Display Partner Performance";
@@ -128,36 +129,68 @@
       removeEventListener();
     }
 
-    const worksheet = demoHelpers.getSelectedSheet(worksheetName);
-
+    // const worksheet = demoHelpers.getSelectedSheet(worksheetName);
+    // const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
+    // console.log(worksheets)
+    //
+    // var worksheet = tableau.extensions.dashboardContent.dashboard.worksheets.find(w => w.name === "Display Partner Performance");
+    //  worksheet.getUnderlyingTablesAsync().then(function (logicalTables) {
+    //      worksheet.getUnderlyingTableDataAsync(logicalTables[0].id).then((dataTable) => {
+    //       const worksheetData = dataTable;
+    //       console.log(worksheet)
+    //       // console.log(worksheetData)
+    //
+    //       let newArr = [];
+    //       let dataJson;
+    //       worksheetData.data.map(d => {
+    //         dataJson = {};
+    //         dataJson['impressions'] = d[19].value; //1st column
+    //         dataJson['cpa'] = d[16].value; //2nd column
+    //         dataJson['partner'] = d[0].value; //3rd column
+    //         dataJson['media_spend'] = d[18].value; //4th column
+    //         dataJson['imp_average'] = d[20].value;
+    //         dataJson['cpa_average'] = d[17].value;
+    //           newArr.push(dataJson);
+    //         });
+    //         // drawDotChart(newArr);
+    //
+    //     });
+    //
+    //  });
 
     // After getting the worksheet,
      // get the summary data for the sheet
-     worksheet.getSummaryDataAsync().then(function (sumdata) {
+     let newArr = [];
+     const worksheet = demoHelpers.getSelectedSheet(worksheetName);
+     const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
 
-      const worksheetData = sumdata;
+     for (let i=0; i < worksheets.length; i++){
+       worksheets[i].getSummaryDataAsync().then(function (sumdata) {
 
-      console.log(worksheetData)
+        const worksheetData = sumdata;
+        console.log(worksheetData.columns)
+        for (let j=0; j< worksheetData.columns.length; j++){
+          console.log(worksheetData.columns[j].fieldName)
+        }
 
-      let newArr = [];
-      let dataJson;
-      worksheetData.data.map(d => {
-        dataJson = {};
-        dataJson['impressions'] = d[8].value; //1st column
-        dataJson['cpa'] = d[2].value; //2nd column
-        dataJson['partner'] = d[0].value; //3rd column
-        dataJson['media_spend'] = d[6].value; //4th column
-        dataJson['imp_average'] = d[7].value;
-        dataJson['cpa_average'] = d[5].value;
-          newArr.push(dataJson);
-          // console.log(dataJson)
-      });
 
-      console.log(newArr);
+        let dataJson;
+        worksheetData.data.map(d => {
+          dataJson = {};
+          dataJson['impressions'] = d[8].value; //1st column
+          dataJson['cpa'] = d[2].value; //2nd column
+          dataJson['partner'] = d[0].value; //3rd column
+          dataJson['media_spend'] = d[6].value; //4th column
+          dataJson['imp_average'] = d[7].value;
+          dataJson['cpa_average'] = d[5].value;
+            newArr.push(dataJson);
+        });
+        // console.log(newArr);
 
-      drawDotChart(newArr);
+        drawDotChart(newArr);
 
-     });
+       });
+     }
 
     worksheet.getSelectedMarksAsync().then((marks) => {
         demoHelpers.populateDataTable(marks, filterByColumn);
@@ -284,7 +317,7 @@
 
       $('#wrapper').empty();
         const partner = d=> d.partner
-        const xAccessor = d => Math.round(d.cpa)
+        const xAccessor = d => d.cpa
         const yAccessor =  d => d.impressions
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const b_size = d => d.media_spend
@@ -301,7 +334,7 @@
 
 
         const width = d3.min([
-            window.innerWidth * 0.9,
+            window.innerWidth ,
         ])
 
         const height = d3.min([
@@ -315,7 +348,7 @@
                 top: 30,
                 right: 50,
                 bottom: 40,
-                left: 80,
+                left: 60,
             },
         }
 
@@ -325,6 +358,8 @@
         dimensions.boundedHeight = dimensions.height -
             dimensions.margin.top -
             dimensions.margin.bottom
+
+
 
         const wrapper = d3.select("#wrapper")
             .append("svg")
@@ -572,7 +607,6 @@
                     });
 
 
-
         const add_sign = d => "$" + add_commas(d);
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
@@ -609,10 +643,5 @@
 
 
     }
-
-
-    // if (d[3].includes("Exceed")) return "#8ab562"
-    // if (d[3].includes("Meet")) return "#4a9bc7"
-    // if (d[3].includes ("Below")) return "#c74a65"
 
 })();

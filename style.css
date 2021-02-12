@@ -1,5 +1,7 @@
 body{
   background-color: #f5f2ee;
+  /* background-color: white; */
+
 }
 
 h4{
@@ -103,8 +105,8 @@ div.tooltip {
 }
 
 #wrapper{
-  padding-top: 10px;
-  padding-bottom: 50px;
+  /* padding-top: 10px;
+  padding-bottom: 10px; */
 }
 
 .line {
@@ -131,4 +133,40 @@ div.tooltip {
 
 .btn:hover {
 	opacity: 0.8;
+}
+
+
+.ticks {
+  font-size: 10px;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.3;
+  stroke-width: 10px;
+}
+
+.track-inset {
+  stroke: #dcdcdc;
+  stroke-width: 8px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  stroke: transparent;
+  cursor: crosshair;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.5;
+  stroke-width: 1.25px;
 }
