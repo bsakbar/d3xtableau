@@ -17,7 +17,10 @@ h5 {
     text-align: left;
 }
 
-h1{
+form{
+  float: right;
+  padding-right: 40px;
+  padding-top: 20px;
 
 }
 
@@ -35,7 +38,10 @@ div.DTS div.dataTables_scrollBody {
     margin-top: -3px;
     height: 32px;
     display: flex;
+}
 
+.container{
+  margin: 0px;
 }
 
 .legends{
@@ -105,8 +111,8 @@ div.tooltip {
 }
 
 #wrapper{
-  /* padding-top: 10px;
-  padding-bottom: 10px; */
+  display: block;
+  padding-top: 50px;
 }
 
 .line {
