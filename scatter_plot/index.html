@@ -17,15 +17,14 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <!-- Include the Tableau Extensions library so we can communicate with Tableau -->
-    <script src="lib/tableau.extensions.1.latest.js"></script>
-    <script src="lib/demoHelpers.js"></script>
+    <script src="../lib/tableau.extensions.1.latest.js"></script>
+    <script src="../lib/demoHelpers.js"></script>
     <!-- Load d3js library -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://d3js.org/d3-format.v2.min.js"></script>
     <!-- Include our own style sheets and javascript code -->
     <link rel="stylesheet" href="style.css">
-    <script src="partners_chart.js"></script>
-    <!-- <script src="campaign_chart.js"></script> -->
+    <script src="scatter_plot.js"></script>
 
 
 </head>
@@ -40,12 +39,11 @@
     </div>
   </div>
   <form>
-    <input id="radio_partner" type="radio" name="choice" checked="checked"> Partners &nbsp;
+    <input id="radio_partner" type="radio" name="choice" checked="checked"> Partners &nbsp;&nbsp;
     <input id="radio_campaign"  type="radio" name="choice"> Campaigns
   </form>
   <div class="container">
     <div id="wrapper"></div>
-    <!-- <div id="wrapper_campaign"></div> -->
 
   </div>
 

@@ -34,20 +34,16 @@
         let dataJson;
         worksheetData.data.map(d => {
           dataJson = {};
-          dataJson['impressions'] = d[7].value; //1st column
-          dataJson['cpa'] = d[2].value; //2nd column
+          dataJson['impressions'] = d[9].value; //1st column
+          dataJson['cpa'] = d[4].value; //2nd column
           dataJson['partner'] = d[0].value; //3rd column
-          dataJson['media_spend'] = d[5].value; //4th column
+          dataJson['media_spend'] = d[7].value; //4th column
           dataJson['campaign'] = d[1].value;
-          dataJson['imp_average'] = d[6].value;
-          dataJson['cpa_average'] = d[4].value;
+          dataJson['imp_average'] = d[8].value;
+          dataJson['cpa_average'] = d[6].value;
             newArr.push(dataJson);
         });
         console.log(newArr);
-
-        // document.getElementsByClass("radio_").addEventListener("change", function() {
-        //
-        // });
 
         if (document.querySelector('input[name="choice"]')) {
           document.querySelectorAll('input[name="choice"]').forEach((elem) => {
