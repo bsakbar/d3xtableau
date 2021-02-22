@@ -200,6 +200,13 @@
            dimensions.margin.top
          }px)`)
 
+         bounds.append("defs")
+        .append("clipPath")
+        .attr("id", "bounds-clip-path")
+
+        const clip = bounds.append("g")
+        .attr("clip-path", "url(#bounds-clip-path)")
+
 
         const div = d3.select("body").append("div")
             .attr("class", "tooltip")
@@ -219,25 +226,25 @@
         .range([dimensions.boundedHeight, 0])
         .nice()
 
-            const curve = d3.curveLinear
+        const curve = d3.curveLinear
 
-            const path1 = d3.area()
-             .x(d => xScale(xAccessor_path(d, 'Google AdWords')))
-             .y0(dimensions.boundedHeight)
-             .y1(d => yScale(yAccessor_path(d, 'Google AdWords')))
-             .curve(curve)
+        const path1 = d3.area()
+         .x(d => xScale(xAccessor_path(d, 'Google AdWords')))
+         .y0(dimensions.boundedHeight)
+         .y1(d => yScale(yAccessor_path(d, 'Google AdWords')))
+         .curve(curve)
 
-           const path2 = d3.area()
-            .x(d => xScale(xAccessor_path(d, 'Bing Ads')))
-            .y0(dimensions.boundedHeight)
-            .y1(d => yScale(yAccessor_path(d, 'Bing Ads')))
-            .curve(curve)
+       const path2 = d3.area()
+        .x(d => xScale(xAccessor_path(d, 'Bing Ads')))
+        .y0(dimensions.boundedHeight)
+        .y1(d => yScale(yAccessor_path(d, 'Bing Ads')))
+        .curve(curve)
 
-            const path3 = d3.area()
-             .x(d => xScale(xAccessor_path(d, 'Yahoo Gemini')))
-             .y0(dimensions.boundedHeight)
-             .y1(d => yScale(yAccessor_path(d, 'Yahoo Gemini')))
-             .curve(curve)
+        const path3 = d3.area()
+         .x(d => xScale(xAccessor_path(d, 'Yahoo Gemini')))
+         .y0(dimensions.boundedHeight)
+         .y1(d => yScale(yAccessor_path(d, 'Yahoo Gemini')))
+         .curve(curve)
 
 
              bounds.append("path")
@@ -306,7 +313,7 @@
                     )
 
 
-        const remove_zero = d => (d / 1e6) + "M";
+        const remove_zero = d => (d / 1e4) + "K";
 
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
