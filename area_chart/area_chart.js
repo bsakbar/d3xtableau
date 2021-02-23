@@ -48,6 +48,8 @@
           dataJson['partner'] == ['Yahoo Gemini']){
             newArr.push(dataJson);
           }
+          // newArr.push(dataJson);
+
         });
 
 
@@ -132,16 +134,16 @@
 
     function drawDotChart(arr) {
       $('#wrapper').empty();
-
         const dateParser = d3.timeParse("%Y-%m-%d")
+        const formatDate = d3.timeFormat("%B %-d, %Y")
         const xAccessor = d => dateParser(d.date)
-        const partner1 = d => d.partner['Google AdWords']
-        const partner2 = d => d.partner['Bing Ads']
-        const partner3 = d => d.partner['Yahoo Gemini']
         const yAccessor =  d => d.impressions
         const y2Accessor =  d => d.ctr
         const clicks = d => d.clicks
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        const partners = d => d.partner
+
+
 
         function xAccessor_path(d, partner){
           if (d.partner == partner){
@@ -161,10 +163,18 @@
           }
         }
 
-        console.log(arr)
+        // function color_ind(d, partner){
+        //   if (d.partner == 'Google AdWords'){
+        //     return '#5EC7EB'
+        //   } else if (d.partner == 'Bing Ads'){
+        //     return 'blue'
+        //   } else {
+        //     return 'red'
+        //   };
+        // }
 
         const width = d3.min([
-            window.innerWidth  * 0.9,
+            window.innerWidth  * 0.95,
         ])
         const height = d3.min([
             window.innerHeight * 0.8,
@@ -226,52 +236,6 @@
         .range([dimensions.boundedHeight, 0])
         .nice()
 
-        const curve = d3.curveLinear
-
-        const path1 = d3.area()
-         .x(d => xScale(xAccessor_path(d, 'Google AdWords')))
-         .y0(dimensions.boundedHeight)
-         .y1(d => yScale(yAccessor_path(d, 'Google AdWords')))
-         .curve(curve)
-
-       const path2 = d3.area()
-        .x(d => xScale(xAccessor_path(d, 'Bing Ads')))
-        .y0(dimensions.boundedHeight)
-        .y1(d => yScale(yAccessor_path(d, 'Bing Ads')))
-        .curve(curve)
-
-        const path3 = d3.area()
-         .x(d => xScale(xAccessor_path(d, 'Yahoo Gemini')))
-         .y0(dimensions.boundedHeight)
-         .y1(d => yScale(yAccessor_path(d, 'Yahoo Gemini')))
-         .curve(curve)
-
-
-             bounds.append("path")
-             .datum(arr)
-             .attr("fill", "#5EC7EB")
-             .attr("d", path1);
-
-             bounds.append("path")
-             .datum(arr)
-             .attr("fill", "blue")
-             .attr("d", path2);
-
-             bounds.append("path")
-             .datum(arr)
-             .attr("fill", "red")
-             .attr("d", path3);
-
-
-
-
-
-
-
-
-
-
-
 
         function x_gridlines() {
           return d3.axisBottom(xScale)
@@ -309,9 +273,68 @@
                 .call(y2_gridlines()
                     .tickSize(dimensions.boundedWidth)
                     .tickFormat("")
-
                     )
 
+        const curve = d3.curveLinear
+
+        function mouseOn(d){
+          div.transition()
+              .duration(200)
+              .style("opacity", .9)
+          d3.select(this)
+              .style("opacity", .6)
+          div.html(d.partner + "<br/>" + "Impressions: " + d.impressions + "<br/>" + "CTR: $" + d.ctr + "<br/>" + "Clicks:" + d.clicks)
+                  .style("left", (d3.event.pageX) + "px")
+                  .style("top", (d3.event.pageY - 28) + "px");
+        };
+
+        function mouseOut(d){
+          div.transition()
+              .duration(200)
+              .style("opacity", 0);
+          d3.select(this)
+              .style("opacity", 1)
+        };
+
+        const path1 = d3.area()
+         .x(d => xScale(xAccessor_path(d, 'Google AdWords')))
+         .y0(yScale(0))
+         .y1(d => yScale(yAccessor_path(d, 'Google AdWords')))
+         .curve(curve)
+
+         bounds.append("path")
+         .datum(arr)
+         .attr("fill", "#5EC7EB")
+         .attr("d", path1);
+
+
+       const path2 = d3.area()
+        .x(d => xScale(xAccessor_path(d, 'Bing Ads')))
+        .y0(yScale(0))
+        .y1(d => yScale(yAccessor_path(d, 'Bing Ads')))
+        .curve(curve)
+
+        bounds.append("path")
+        .datum(arr)
+        .attr("fill", 'blue')
+        .attr("d", path2);
+
+
+        const path3 = d3.area()
+         .x(d => xScale(xAccessor_path(d, 'Yahoo Gemini')))
+         .y0(yScale(0))
+         .y1(d => yScale(yAccessor_path(d, 'Yahoo Gemini')))
+         .curve(curve)
+
+         bounds.append("path")
+         .datum(arr)
+         .attr("fill", 'red')
+         .attr("d", path3);
+
+
+         bounds.selectAll("path")
+         .on("mouseover", mouseOn)
+         .on("mouseout", mouseOut);
 
         const remove_zero = d => (d / 1e4) + "K";
 
@@ -329,7 +352,7 @@
         const y2AxisGenerator = d3.axisRight()
             .scale(y2Scale)
             .ticks(10)
-            // .tickFormat(remove_zero);
+            .tickFormat(d =>(d * 10)+ "%");
 
         const y2Axis = bounds.append("g")
             .call(y2AxisGenerator)
@@ -343,7 +366,7 @@
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
             .ticks(10)
-            // .tickFormat(remove_zero);
+            .tickFormat(formatDate);
 
         const xAxis = bounds.append("g")
             .call(xAxisGenerator)
