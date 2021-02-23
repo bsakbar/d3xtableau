@@ -210,6 +210,12 @@
            dimensions.margin.top
          }px)`)
 
+         bounds.append("defs")
+        .append("clipPath")
+        .attr("id", "bounds-clip-path")
+
+        const clip = bounds.append("g")
+        .attr("clip-path", "url(#bounds-clip-path)")
 
 
         const div = d3.select("body").append("div")
@@ -293,20 +299,11 @@
               .style("opacity", 1)
         };
 
-        var clip = bounds.append("defs").append("svg:clipPath")
-        .attr("id", "clip")
-        .append("svg:rect")
-        .attr("width", dimensions.boundedWidth )
-        .attr("height", dimensions.boundedHeight )
-        .attr("x", 0)
-        .attr("y", 0);
+
 
         var brush = d3.brushX()
         .extent([[0,0], [dimensions.boundedWidth,dimensions.boundedHeight]])
         .on("end", updateChart)
-
-        var area = bounds.append("g")
-        .attr("clip-path", "url(#clip)")
 
         const path1 = d3.area()
          .x(d => xScale(xAccessor_path(d, 'Google AdWords')))
@@ -314,18 +311,16 @@
          .y1(d => yScale(yAccessor_path(d, 'Google AdWords')))
          .curve(curve)
 
-         area.append("path")
+         bounds.append("path")
          .datum(arr)
-         .attr("class", "area1")
          .attr("fill", "#5EC7EB")
          .attr("d", path1)
+         .attr("class", path1)
 
-         area
-        .append("g")
-        .attr("class", "brush")
-        .call(brush);
-
-
+         bounds
+         .append("g")
+         .attr("class", "brush")
+         .call(brush);
 
 
        const path2 = d3.area()
@@ -334,16 +329,10 @@
         .y1(d => yScale(yAccessor_path(d, 'Bing Ads')))
         .curve(curve)
 
-        area.append("path")
+        bounds.append("path")
         .datum(arr)
-        .attr("class", "area2")
         .attr("fill", 'blue')
-        .attr("d", path2)
-
-         area
-        .append("g")
-        .attr("class", "brush")
-        .call(brush);
+        .attr("d", path2);
 
 
         const path3 = d3.area()
@@ -352,22 +341,14 @@
          .y1(d => yScale(yAccessor_path(d, 'Yahoo Gemini')))
          .curve(curve)
 
-
-          area.append("path")
+         bounds.append("path")
          .datum(arr)
-         .attr("class", "area3")
          .attr("fill", 'red')
-         .attr("d", path3)
-
-         area
-        .append("g")
-        .attr("class", "brush")
-        .call(brush);
+         .attr("d", path3);
 
 
-         // var areas = area.selectAll("path")
-
-
+         // bounds.selectAll("path")
+         //
          // .on("mouseover", mouseOn)
          // .on("mouseout", mouseOut);
 
@@ -384,46 +365,17 @@
              xScale.domain([ 4,8])
            }else{
              xScale.domain([ xScale.invert(extent[0]), xScale.invert(extent[1]) ])
-             area.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
+             bounds.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
            }
 
            // Update axis and area position
-           xAxis.transition().duration(1000).call(d3.axisBottom(xScale))
-           area
-               .select('.area1')
+           xAxisGenerator.transition().duration(1000).call(d3.axisBottom(xScale))
+           bounds
+               .select('.path1')
                .transition()
                .duration(1000)
                .attr("d", path1)
-
-           area
-               .select('.area2')
-               .transition()
-               .duration(1000)
-               .attr("d", path2)
-
-           area
-               .select('.area3')
-               .transition()
-               .duration(1000)
-               .attr("d", path3)
          }
-
-         bounds.on("dblclick",function(){
-          xScale.domain(d3.extent(arr, xAccessor))
-          xAxis.transition().call(d3.axisBottom(xScale))
-          area
-            .select('.area1')
-            .transition()
-            .attr("d", path1)
-          area
-            .select('.area2')
-            .transition()
-            .attr("d", path2)
-          area
-            .select('.area3')
-            .transition()
-            .attr("d", path3)
-        });
 
         const remove_zero = d => (d / 1e4) + "K";
 
