@@ -58,24 +58,27 @@
         let i;
         for (i = 0; i < newArr.length; i++){
 
-          var impressions = !isNaN(newArr[i].impressions) ? newArr[i].impressions : 0;
-          var clicks = !isNaN(newArr[i].clicks) ? newArr[i].clicks : 0;
-          var ctr = !isNaN(newArr[i].ctr) ? newArr[i].ctr : 0;
+          var impressions = newArr[i].impressions
+          var clicks = newArr[i].clicks
+          var ctr = newArr[i].ctr
           var date = newArr[i].date
+          var partner = newArr[i].partner
 
-          if (newArr[i].partner in sums){
-            sums[newArr[i].partner]['impressions'] += impressions
-            sums[newArr[i].partner]['ctr'] += ctr
-            sums[newArr[i].partner]['clicks'] += clicks
-            // sums[newArr[i].partner]['date'] += date
+          var partner_date = partner+'_'+date
+
+          if (partner_date in sums){
+            sums[partner_date]['impressions'] += impressions
+            sums[partner_date]['ctr'] += ctr
+            sums[partner_date]['clicks'] += clicks
+            // sums[newArr[i].date]['partner'] += partner
 
         } else {
-             sums[newArr[i].partner] = {
+             sums[partner_date] = {
                "impressions": impressions,
                "ctr": ctr,
                "clicks": clicks,
-               "date": date,
-               "partner": newArr[i].partner
+               "partner": newArr[i].partner,
+               "date": newArr[i].date
             }
           }
         }
@@ -83,14 +86,9 @@
         for (const [key, value] of Object.entries(sums))
           sumsArr.push(value)
 
-        var selectedpartners = []
-        selectedpartners.push(sums['Google AdWords'])
-        selectedpartners.push(sums['Bing Ads'])
-        selectedpartners.push(sums['Yahoo Gemini'])
-        console.log(newArr);
-        // console.log(selectedpartners);
+        sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
 
-        drawDotChart(newArr);
+        drawDotChart(sumsArr);
         // drawDotChart(newArr);
 
 
@@ -142,36 +140,21 @@
         const clicks = d => d.clicks
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const partners = d => d.partner
+        const average_y2 = d => Math.round(d3.mean(arr, y2Accessor));
 
-
-
-        function xAccessor_path(d, partner){
-          if (d.partner == partner){
-            return xAccessor(d)
-          }
-          else {
-            return 0
-          }
-        }
-
-        function yAccessor_path(d, partner){
-          if (d.partner == partner){
-            return yAccessor(d)
-          }
-          else {
-            return 0
+        var arr_google = []
+        var arr_bing = []
+        var arr_yahoo = []
+        for (var i=0; i< arr.length; i++){
+          if (arr[i].partner == 'Google AdWords'){
+            arr_google.push(arr[i])
+          } else if (arr[i].partner == 'Bing Ads'){
+            arr_bing.push(arr[i])
+          } else if (arr[i].partner == 'Yahoo Gemini'){
+            arr_yahoo.push(arr[i])
           }
         }
 
-        // function color_ind(d, partner){
-        //   if (d.partner == 'Google AdWords'){
-        //     return '#5EC7EB'
-        //   } else if (d.partner == 'Bing Ads'){
-        //     return 'blue'
-        //   } else {
-        //     return 'red'
-        //   };
-        // }
 
         const width = d3.min([
             window.innerWidth  * 0.95,
@@ -272,6 +255,13 @@
         const curve = d3.curveLinear
 
 
+        function line_color_ind(d){
+          if (y2Accessor(d) < average_y2(d)) {
+            return "#e15759"
+          } else {
+            return "#4e79a7"
+          };
+        }
 
 
         function mouseOn(d){
@@ -280,7 +270,7 @@
               .style("opacity", .9)
           d3.select(this)
               .style("opacity", .6)
-          div.html(d.partner + "<br/>" + "Impressions: " + d.impressions + "<br/>" + "CTR: $" + d.ctr + "<br/>" + "Clicks:" + d.clicks)
+          div.html(d.partner + "<br/>" + "Impressions: " + d.impressions + "<br/>" + "CTR:" + d.ctr + "<br/>" + "Clicks:" + d.clicks)
                   .style("left", (d3.event.pageX) + "px")
                   .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -309,15 +299,17 @@
         .attr("clip-path", "url(#clip)")
 
         const path1 = d3.area()
-         .x(d => xScale(xAccessor_path(d, 'Google AdWords')))
+         .x(d => xScale(xAccessor(d)))
          .y0(yScale(0))
-         .y1(d => yScale(yAccessor_path(d, 'Google AdWords')))
+         .y1(d => yScale(yAccessor(d)))
          .curve(curve)
 
          area.append("path")
-         .datum(arr)
+         .datum(arr_google)
          .attr("class", "area1")
          .attr("fill", "#5EC7EB")
+         .attr("opacity", 0.8)
+
          .attr("d", path1)
 
          area
@@ -326,18 +318,19 @@
         .call(brush);
 
 
-
-
        const path2 = d3.area()
-        .x(d => xScale(xAccessor_path(d, 'Bing Ads')))
+        .x(d => xScale(xAccessor(d)))
         .y0(yScale(0))
-        .y1(d => yScale(yAccessor_path(d, 'Bing Ads')))
+        .y1(d => yScale(yAccessor(d)))
         .curve(curve)
 
         area.append("path")
-        .datum(arr)
+        .datum(arr_bing)
         .attr("class", "area2")
-        .attr("fill", 'blue')
+        .attr("fill", '#4e79a7')
+        .attr("opacity", 0.8)
+
+
         .attr("d", path2)
 
          area
@@ -347,29 +340,48 @@
 
 
         const path3 = d3.area()
-         .x(d => xScale(xAccessor_path(d, 'Yahoo Gemini')))
+         .x(d => xScale(xAccessor(d)))
          .y0(yScale(0))
-         .y1(d => yScale(yAccessor_path(d, 'Yahoo Gemini')))
+         .y1(d => yScale(yAccessor(d)))
          .curve(curve)
 
 
           area.append("path")
-         .datum(arr)
+         .datum(arr_yahoo)
          .attr("class", "area3")
-         .attr("fill", 'red')
+         .attr("fill", 'yellow')
+         .attr("opacity", 0.8)
          .attr("d", path3)
+
 
          area
         .append("g")
         .attr("class", "brush")
         .call(brush);
 
+        const line1 = d3.line()
+         .x(d => xScale(xAccessor(d)))
+         .y(d => y2Scale(y2Accessor(d)))
 
-         // var areas = area.selectAll("path")
 
+         area.append("path")
+         .data(arr)
+         .attr("class", "ctrLine")
+         .attr("fill", 'none')
+         .attr("stroke", line_color_ind)
+         .attr("d", line1(arr))
 
-         // .on("mouseover", mouseOn)
-         // .on("mouseout", mouseOut);
+         area.selectAll("path")
+         .on("mouseover", mouseOn)
+         .on("mouseout", mouseOut);
+
+         const avgLine_y = bounds.append("line")
+               .attr("y1", d => y2Scale(average_y2(d)))
+               .attr("y2", d => y2Scale(average_y2(d)))
+               .attr("x1", 0)
+               .attr("x2", dimensions.boundedWidth)
+               .attr("stroke", "green")
+               .attr("stroke-dasharray", "3px 3px")
 
          var idleTimeout
          function idled() { idleTimeout = null; }
@@ -383,7 +395,7 @@
              if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
              xScale.domain([ 4,8])
            }else{
-             xScale.domain([ xScale.invert(extent[0]), xScale.invert(extent[1]) ])
+             xScale.domain([ xScale.invert(extent[0]), xScale.invert(extent[1])])
              area.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
            }
 
@@ -394,18 +406,21 @@
                .transition()
                .duration(1000)
                .attr("d", path1)
-
            area
                .select('.area2')
                .transition()
                .duration(1000)
                .attr("d", path2)
-
            area
                .select('.area3')
                .transition()
                .duration(1000)
                .attr("d", path3)
+           area
+               .select('.ctrLine')
+               .transition()
+               .duration(1000)
+               .attr("d", line1(arr))
          }
 
          bounds.on("dblclick",function(){
@@ -423,6 +438,10 @@
             .select('.area3')
             .transition()
             .attr("d", path3)
+          area
+            .select('.ctrLine')
+            .transition()
+            .attr("d", line1(arr))
         });
 
         const remove_zero = d => (d / 1e4) + "K";
@@ -440,7 +459,7 @@
 
         const y2AxisGenerator = d3.axisRight()
             .scale(y2Scale)
-            .ticks(10)
+            .ticks(5)
             .tickFormat(d =>(d * 10)+ "%");
 
         const y2Axis = bounds.append("g")

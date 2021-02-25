@@ -345,6 +345,19 @@
           };
         }
 
+        var clip = bounds.append("defs").append("svg:clipPath")
+        .attr("id", "clip")
+        .append("svg:rect")
+        .attr("width", dimensions.boundedWidth )
+        .attr("height", dimensions.boundedHeight )
+        .attr("x", 0)
+        .attr("y", 0);
+
+
+        var brush = d3.brush()
+        .extent([[0,0], [dimensions.boundedWidth,dimensions.boundedHeight]])
+        .on("end", updateChart)
+
         let dots = bounds.selectAll("circle")
             .data(arr)
             .enter().append("circle")
@@ -363,6 +376,11 @@
             .attr("fill", color_ind)
             .style("opacity", .9)
             .style("mix-blend-mode", "multiply");
+
+        dots
+          .append("g")
+          .attr("class", "brush")
+          .call(brush);
 
 
         dots.on("mouseover", function(d) {
@@ -389,6 +407,36 @@
                     .attr("fill", color_ind)
             });
 
+            function updateChart() {
+
+            var s = d3.event.selection;
+            if (!s) {
+                if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+                xScale.domain(d3.extent(arr, xAccessor(d))).nice();
+                yScale.domain(d3.extent(arr, yAccessor(d))).nice();
+            } else {
+
+                xScale.domain([s[0][0], s[1][0]].map(xScale.invert, xScale));
+                yScale.domain([s[1][1], s[0][1]].map(yScale.invert, yScale));
+                dots.select(".brush").call(brush.move, null);
+            }
+            zoom();
+        }
+
+        function idled() {
+            idleTimeout = null;
+        }
+
+        function zoom() {
+
+            var t = dots.transition().duration(750);
+            svg.select("#axis-x").transition(t).call(xAxis);
+            svg.select("#axis-y").transition(t).call(yAxis);
+            dots.selectAll("circle").transition(t)
+            .attr("cx", d => xScale(xAccessor(d)))
+            .attr("cy", d => yScale(yAccessor(d)));
+        }
+
 
         const remove_zero = d => (d / 1e6) + "M";
 
@@ -398,6 +446,7 @@
             .tickFormat(remove_zero);
 
         const yAxis = bounds.append("g")
+            .attr('id', "axis-y")
             .call(yAxisGenerator)
             .attr("font-family", "Arial")
             .attr("font-size", "10")
@@ -501,6 +550,7 @@
             .tickFormat(add_sign)
 
         const xAxis = bounds.append("g")
+            .attr('id', "axis-x")
             .call(xAxisGenerator)
             .style("transform", `translateY(${
         dimensions.boundedHeight
