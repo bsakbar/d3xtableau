@@ -257,6 +257,8 @@
         const b_size = d => d.media_spend
         const average_y = d => Math.round(d3.mean(arr, yAccessor));
         const average_x = d => d3.mean(arr, xAccessor);
+
+
         const width = d3.min([
             window.innerWidth ,
         ])
@@ -296,6 +298,12 @@
             .attr("class", "tooltip")
             .style("opacity", 0);
 
+        wrapper.append("defs").append("clipPath")
+        .attr("id", "clip")
+        .append("rect")
+        .attr("width", dimensions.boundedWidth)
+        .attr("height", dimensions.boundedHeight);
+
         const xScale = d3.scaleLinear()
             .domain(d3.extent(arr, xAccessor))
             .range([0, dimensions.boundedWidth])
@@ -320,7 +328,7 @@
               .ticks(10)
             }
 
-            bounds.append("g")
+            var gx = bounds.append("g")
             .attr("class", "grid")
             .attr("transform", "translate(0," + dimensions.boundedHeight + ")")
             .call(x_gridlines()
@@ -328,12 +336,14 @@
                 .tickFormat("")
             )
 
-            bounds.append("g")
+            var gy = bounds.append("g")
                 .attr("class", "grid")
                 .call(y_gridlines()
                     .tickSize(-dimensions.boundedWidth)
                     .tickFormat("")
                 )
+
+
 
         function color_ind(d){
           if (yAccessor(d) < average_y(d)) {
@@ -345,98 +355,79 @@
           };
         }
 
-        var clip = bounds.append("defs").append("svg:clipPath")
-        .attr("id", "clip")
-        .append("svg:rect")
-        .attr("width", dimensions.boundedWidth )
-        .attr("height", dimensions.boundedHeight )
-        .attr("x", 0)
-        .attr("y", 0);
+        var dots_g = bounds.append("g")
+        // .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')')
+        .attr("clip-path", "url(#clip)")
+        .classed("dots_g", true);
 
 
-        var brush = d3.brush()
-        .extent([[0,0], [dimensions.boundedWidth,dimensions.boundedHeight]])
-        .on("end", updateChart)
 
-        let dots = bounds.selectAll("circle")
-            .data(arr)
-            .enter().append("circle")
+        var zoom = d3.zoom()
+        .scaleExtent([.5, 10])
+        .extent([[0, 0], [dimensions.boundedWidth, dimensions.boundedHeight]])
+        .on("zoom", zoomed);
 
-        dots
-            .transition()
-            .duration(500)
-            .attr("cx", d => xScale(xAccessor(d)))
-            .attr("cy", d => yScale(yAccessor(d)))
-            .attr("r", 0)
-            .transition()
-            .duration(900)
-            .attr("r", d => b_sizze(b_size(d))/3)
-            // .attr("r", 10)
+        bounds.append("rect")
+        .attr("width", dimensions.boundedWidth)
+        .attr("height", dimensions.boundedHeight)
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        // .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')')
+        .call(zoom);
 
-            .attr("fill", color_ind)
-            .style("opacity", .9)
-            .style("mix-blend-mode", "multiply");
+        function zoomed() {
+          var new_xScale = d3.event.transform.rescaleX(xScale);
+          var new_yScale = d3.event.transform.rescaleY(yScale);
+          gx.call(xAxisGenerator.scale(new_xScale));
+          gy.call(yAxisGenerator.scale(new_yScale));
+          dots.data(arr)
+           .attr('cx', function(d) {return new_xScale(xAccessor(d))})
+           .attr('cy', function(d) {return new_yScale(yAccessor(d))});
+      }
 
-        dots
-          .append("g")
-          .attr("class", "brush")
-          .call(brush);
+      let dots = dots_g.selectAll("circle")
+          .data(arr)
+          .enter().append("circle")
+
+      dots
+          .transition()
+          .duration(500)
+          .attr("cx", d => xScale(xAccessor(d)))
+          .attr("cy", d => yScale(yAccessor(d)))
+          .attr("r", 0)
+          .transition()
+          .duration(900)
+          .attr("r", d => b_sizze(b_size(d))/3)
+          // .attr("r", 10)
+
+          .attr("fill", color_ind)
+          .style("opacity", .9)
+          .style("mix-blend-mode", "multiply");
 
 
-        dots.on("mouseover", function(d) {
-                div.transition()
-                    .duration(200)
-                    .style("opacity", .9)
-                d3.select(this)
-                    .style("opacity", .6)
-                    // .attr("fill", d => colorScale(colorAccessor(d)))
-                    .attr("fill", color_ind)
+      dots.on("mouseover", function(d) {
+              div.transition()
+                  .duration(200)
+                  .style("opacity", .9)
+              d3.select(this)
+                  .style("opacity", .6)
+                  // .attr("fill", d => colorScale(colorAccessor(d)))
+                  .attr("fill", color_ind)
 
 
-                div.html(d.partner + "<br/>" + "Impressions: " + add_commas(d.impressions) + "<br/>" + "Media Spend: $" + add_commas(Math.round(d.media_spend)) + "<br/>" + "CPA: $" + add_commas(Math.round(d.cpa)))
-                        .style("left", (d3.event.pageX) + "px")
-                        .style("top", (d3.event.pageY - 28) + "px");
-            })
+              div.html(d.partner + "<br/>" + "Impressions: " + add_commas(d.impressions) + "<br/>" + "Media Spend: $" + add_commas(Math.round(d.media_spend)) + "<br/>" + "CPA: $" + add_commas(Math.round(d.cpa)))
+                      .style("left", (d3.event.pageX) + "px")
+                      .style("top", (d3.event.pageY - 28) + "px");
+          })
 
-            .on("mouseout", function(d) {
-                div.transition()
-                    .duration(200)
-                    .style("opacity", 0);
-                d3.select(this)
-                    .style("opacity", 1)
-                    .attr("fill", color_ind)
-            });
-
-            function updateChart() {
-
-            var s = d3.event.selection;
-            if (!s) {
-                if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
-                xScale.domain(d3.extent(arr, xAccessor(d))).nice();
-                yScale.domain(d3.extent(arr, yAccessor(d))).nice();
-            } else {
-
-                xScale.domain([s[0][0], s[1][0]].map(xScale.invert, xScale));
-                yScale.domain([s[1][1], s[0][1]].map(yScale.invert, yScale));
-                dots.select(".brush").call(brush.move, null);
-            }
-            zoom();
-        }
-
-        function idled() {
-            idleTimeout = null;
-        }
-
-        function zoom() {
-
-            var t = dots.transition().duration(750);
-            svg.select("#axis-x").transition(t).call(xAxis);
-            svg.select("#axis-y").transition(t).call(yAxis);
-            dots.selectAll("circle").transition(t)
-            .attr("cx", d => xScale(xAccessor(d)))
-            .attr("cy", d => yScale(yAccessor(d)));
-        }
-
+          .on("mouseout", function(d) {
+              div.transition()
+                  .duration(200)
+                  .style("opacity", 0);
+              d3.select(this)
+                  .style("opacity", 1)
+                  .attr("fill", color_ind)
+          });
 
         const remove_zero = d => (d / 1e6) + "M";
 
