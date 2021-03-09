@@ -103,6 +103,9 @@
         }
         removeEventListener = worksheet.addEventListener(
             tableau.TableauEventType.MarkSelectionChanged, marksSelectedEventHandler);
+
+        // removeEventListener = worksheet.addEventListener(
+        //     tableau.TableauEventType.FilterChanged, marksSelectedEventHandler);
     }
 
     function saveSheetAndLoadSelectedMarks(worksheetName) {
