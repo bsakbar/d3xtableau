@@ -1,5 +1,5 @@
 body{
-  background-color: #f5f2ee;
+  background-color: #1b2326;
   /* background-color: white; */
 
 }
@@ -102,14 +102,20 @@ div.tooltip {
     padding: 10px;
     /* padding-left: 10px; */
     font-family: "Arial";
-    background: #1b2326;
-    color: white;
+    background: #F5F2EE;
+    color: #1b2326;
     font-size: 12px;
     border: 0px;
     border-radius: 8px;
     pointer-events: none;
 }
-
+.axisLine text{
+  fill: white;
+}
+.axisLine path{
+  stroke: white;
+  opacity: 0.4;
+}
 #wrapper{
   display: block;
   padding-top: 50px;
@@ -117,22 +123,27 @@ div.tooltip {
 
 .line {
   fill: none;
-  stroke: #1b2326;
+  stroke: lightgrey;
   stroke-width: 2px;
 }
 
 .grid line {
   stroke: lightgrey;
-  stroke-opacity: 0.7;
+  stroke-opacity: 0.5;
 }
 
 .grid_y2 line {
-  stroke: #5EC7EB;
+  stroke: lightgrey;
   stroke-opacity: 0.5;
 }
 
 .grid path {
   stroke-width: 0;
+}
+
+.ctrLine path{
+  stroke-width: 0.3px;
+  opacity: 0.5;
 }
 .btn {
 	color: #5EC7EB!important;

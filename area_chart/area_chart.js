@@ -6,8 +6,8 @@
 
     $(document).ready(function() {
         tableau.extensions.initializeAsync().then(function() {
-            $('#reset_filters_button').click(resetFilters);
             const savedSheetName = "D3 DATA"
+            // const savedSheetName = 'Partner Display Performance'
             loadSelectedMarks(savedSheetName);
 
         }, function(err) {
@@ -24,8 +24,9 @@
 
         const worksheet = demoHelpers.getSelectedSheet(worksheetName);
         const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
-
-        // for (let i=0; i < worksheets.length; i++){
+         for (let i=0; i < worksheets.length; i++){
+           console.log(worksheets[i].name)
+         }
         worksheet.getSummaryDataAsync().then(function(sumdata) {
             const worksheetData = sumdata;
             console.log(worksheetData)
@@ -91,7 +92,6 @@
             drawDotChart(sumsArr);
             // drawDotChart(newArr);
 
-
         });
 
         worksheet.getSelectedMarksAsync().then((marks) => {
@@ -109,13 +109,18 @@
         tableau.extensions.settings.set('sheet', worksheetName);
         tableau.extensions.settings.saveAsync();
         loadSelectedMarks(worksheetName);
+        console.log('hi')
+
     }
 
     function filterByColumn(columnIndex, fieldName) {
         const columnValues = demoHelpers.getValuesInColumn(columnIndex);
+        const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
         const worksheet = demoHelpers.getSelectedSheet(tableau.extensions.settings.get('sheet'));
+        // console.log(worksheets)
+        // console.log(worksheet)
 
-        worksheet.applyFilterAsync(fieldName, columnValues, tableau.FilterUpdateType.Replace);
+        worksheets[0].applyFilterAsync(fieldName, columnValues, tableau.FilterUpdateType.Replace);
 
         filteredColumns.push(fieldName);
     }
@@ -213,6 +218,10 @@
             .range([dimensions.boundedHeight, 0])
             // .nice()
 
+        const b_sizze = d3.scaleLinear()
+            .domain(d3.extent(arr, clicks))
+            .range([2, 8])
+
 
         function x_gridlines() {
             return d3.axisBottom(xScale)
@@ -267,10 +276,10 @@
         function mouseOn(d) {
             div.transition()
                 .duration(200)
-                .style("opacity", .9)
+                .style("opacity", 0.95)
             d3.select(this)
-                .style("opacity", .6)
-            div.html(d.partner + "<br/>" + "Impressions: " + d.impressions + "<br/>" + "CTR:" + d.ctr + "<br/>" + "Clicks:" + d.clicks)
+                .style("opacity", 1)
+            div.html("Impressions: " + d.impressions + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%" + "<br/>" + "Clicks: " + d.clicks)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -280,7 +289,7 @@
                 .duration(200)
                 .style("opacity", 0);
             d3.select(this)
-                .style("opacity", 1)
+                .style("opacity", 0.6)
         };
 
         var clip = bounds.append("defs").append("svg:clipPath")
@@ -311,7 +320,7 @@
             .datum(arr_google)
             .attr("class", "area1")
             .attr("fill", "#5EC7EB")
-            .attr("opacity", 0.8)
+            .attr("opacity", 0.9)
             .attr("d", path1)
 
         area
@@ -330,13 +339,8 @@
             .datum(arr_bing)
             .attr("class", "area2")
             .attr("fill", '#4e79a7')
-            .attr("opacity", 0.8)
+            // .attr("opacity", 0.8)
             .attr("d", path2)
-
-        area
-            .append("g")
-            .attr("class", "brush")
-            .call(brush);
 
 
         const path3 = d3.area()
@@ -354,12 +358,7 @@
             .attr("d", path3)
 
 
-        area
-            .append("g")
-            .attr("class", "brush")
-            .call(brush);
-
-        const curve2 = d3.curveBasis
+        const curve2 = d3.curveLinear
 
 
         const line1 = d3.line()
@@ -372,12 +371,22 @@
             .data(arr)
             .attr("class", "ctrLine")
             .attr("fill", 'none')
-            .attr("weight", 1)
-            .attr("stroke", "black")
+            .attr("stroke", "white")
             .attr("d", line1(arr))
 
+        area.selectAll("circle")
+           .data(arr)
+           .enter()
+           .append("circle")
+           .attr("class", "endPoints")
+           .attr("fill", "white")
+           .style("opacity", 0.6)
+           .attr("stroke", "none")
+           .attr("cx", d => xScale(xAccessor(d)))
+           .attr("cy", d => y2Scale(y2Accessor(d)))
+           .attr("r", d => b_sizze(clicks(d)))
 
-        area.selectAll("path")
+        area.selectAll("circle")
             .on("mouseover", mouseOn)
             .on("mouseout", mouseOut);
 
@@ -386,16 +395,17 @@
             .attr("y2", d => y2Scale(average_y2(d)))
             .attr("x1", 0)
             .attr("x2", dimensions.boundedWidth)
-            .attr("stroke", "green")
+            .attr("stroke", "#D93251")
+            .attr("stroke-width", "2px")
             .attr("weight", 3)
-            .attr("stroke-dasharray", "3px 3px")
+            .attr("stroke-dasharray", "5px 5px")
 
         const avgLabel_y = bounds.append("text")
             .attr("y", d => y2Scale(average_y2(d)) - 5)
             .attr("x", 10)
             .style("font-weight", "bold")
             .text("Avg CTR:")
-            .attr("fill", "black")
+            .attr("fill", "white")
             .style("font-size", "12px")
             .attr("font-family", "Arial")
 
@@ -411,20 +421,10 @@
             .text(d => average_y2(d) * 10 + "%")
             .attr("y", d => y2Scale(average_y2(d)) + 15)
             .attr("x", 10)
-            // .attr("opacity", 0)
             .style("font-size", "12px")
             .attr("font-family", "Arial")
             .attr("fill", "#1B2326")
-        // .transition()
-        // .duration(1500)
-        // .delay(300)
-        // .attr("opacity", .6)
-        // .tween("text", function(d) {
-        //   var i = d3.interpolate(0, average_y2(d));
-        //   return function(t) {
-        //     d3.select(this).text(roundNo_2(i(t)));
-        //   };
-        // });
+
 
         var idleTimeout
 
@@ -448,6 +448,8 @@
 
             // Update axis and area position
             xAxis.transition().duration(1000).call(d3.axisBottom(xScale))
+            // yAxis.transition().duration(1000).call(d3.axisLeft(yScale))
+
             area
                 .select('.area1')
                 .transition()
@@ -468,6 +470,13 @@
                 .transition()
                 .duration(1000)
                 .attr("d", line1(arr))
+
+            area
+                .select('.endPoints')
+                .transition()
+                .duration(1000)
+                .attr("cx", d => xScale(xAccessor(d)))
+                .attr("cy", d => y2Scale(y2Accessor(d)))
         }
 
         bounds.on("dblclick", function() {
@@ -489,6 +498,12 @@
                 .select('.ctrLine')
                 .transition()
                 .attr("d", line1(arr))
+            area
+                .select('.endPoints')
+                .transition()
+               .attr("cx", d => xScale(xAccessor(d)))
+               .attr("cy", d => y2Scale(y2Accessor(d)))
+               .attr("r", 1.5)
         });
 
         const remove_zero = d => (d / 1e4) + "K";
@@ -499,10 +514,13 @@
             .tickFormat(remove_zero);
 
         const yAxis = bounds.append("g")
+            .attr("class","axisLine")
             .call(yAxisGenerator)
             .attr("font-family", "Arial")
             .attr("font-size", "10")
             .attr("text-align", "left")
+
+
 
         const y2AxisGenerator = d3.axisRight()
             .scale(y2Scale)
@@ -510,6 +528,7 @@
             .tickFormat(d => (d * 10) + "%");
 
         const y2Axis = bounds.append("g")
+            .attr("class","axisLine")
             .call(y2AxisGenerator)
             .style("transform", `translateX(${
               dimensions.boundedWidth
@@ -518,12 +537,16 @@
             .attr("font-size", "10")
             .attr("text-align", "left")
 
+
+
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
             .ticks(10)
             .tickFormat(formatDate);
 
+
         const xAxis = bounds.append("g")
+            .attr("class","axisLine")
             .call(xAxisGenerator)
             .style("transform", `translateY(${
         dimensions.boundedHeight
@@ -538,7 +561,7 @@
             .style("font-size", "10")
             .style("font-weight", "bold")
             .html("")
-            .attr("fill", "black")
+            .attr("fill", "white")
 
         const yAxisLabel = yAxis.append("text")
             .attr("x", -dimensions.boundedHeight / 2)
@@ -549,7 +572,7 @@
             .html("Impressions")
             .style("transform", "rotate(-90deg)")
             .style("text-anchor", "middle")
-            .attr("fill", "black")
+            .style("fill", "white")
 
         const y2AxisLabel = y2Axis.append("text")
             .attr("x", dimensions.boundedHeight / 2)
@@ -560,7 +583,7 @@
             .html("CTR")
             .style("transform", "rotate(90deg)")
             .style("text-anchor", "middle")
-            .attr("fill", "black")
+            .attr("fill", "white")
 
     }
 

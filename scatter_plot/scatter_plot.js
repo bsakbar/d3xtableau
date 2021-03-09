@@ -257,10 +257,12 @@
         const b_size = d => d.media_spend
         const average_y = d => Math.round(d3.mean(arr, yAccessor));
         const average_x = d => d3.mean(arr, xAccessor);
+        const remove_zero = d => (d / 1e6) + "M";
+        const add_sign = d => "$" + add_commas(d);
 
 
         const width = d3.min([
-            window.innerWidth ,
+            window.innerWidth * 0.98 ,
         ])
         const height = d3.min([
             window.innerHeight * 0.8,
@@ -271,7 +273,7 @@
             margin: {
                 top: 30,
                 right: 50,
-                bottom: 40,
+                bottom: 30,
                 left: 60,
             },
         }
@@ -298,7 +300,7 @@
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-        wrapper.append("defs").append("clipPath")
+        bounds.append("defs").append("clipPath")
         .attr("id", "clip")
         .append("rect")
         .attr("width", dimensions.boundedWidth)
@@ -316,32 +318,82 @@
 
         const b_sizze = d3.scaleLinear()
             .domain(d3.extent(arr, b_size))
-            .range([10, 70])
+            .range([10, 60])
 
             function x_gridlines() {
-              return d3.axisBottom(xScale)
+              return d3.axisBottom()
+              .scale(xScale)
               .ticks(10)
             }
 
             function y_gridlines() {
-              return d3.axisLeft(yScale)
+              return d3.axisLeft()
+              .scale(yScale)
               .ticks(10)
             }
 
-            var gx = bounds.append("g")
-            .attr("class", "grid")
-            .attr("transform", "translate(0," + dimensions.boundedHeight + ")")
-            .call(x_gridlines()
+
+
+
+
+
+            const yAxisGenerator = d3.axisLeft()
+                .scale(yScale)
+                .ticks(6)
+                .tickSize(-dimensions.boundedWidth)
+                .tickFormat("")
+                .tickFormat(remove_zero);
+
+            const yAxis = bounds.append("g")
+                .attr('id', "axis-y")
+                // .call(yAxisGenerator)
+                .attr("font-family", "Arial")
+                .attr("font-size", "10")
+                .attr("text-align","left")
+
+            const xAxisGenerator = d3.axisBottom()
+                .scale(xScale)
+                .ticks(5)
                 .tickSize(-dimensions.boundedHeight)
                 .tickFormat("")
-            )
+                .tickFormat(add_sign)
+
+            const xAxis = bounds.append("g")
+                .attr('id', "axis-x")
+                .style("transform", `translateY(${
+            dimensions.boundedHeight
+          }px)`)
+                .attr("font-family", "Arial")
+                .attr("font-size", "10")
+
+
+            var gx = bounds.append("g")
+            .call(xAxisGenerator)
+            .attr("class", "grid")
+            .attr("font-family", "Arial")
+            .attr("font-size", "10")
+            .attr("transform", "translate(0," + dimensions.boundedHeight + ")");
+
 
             var gy = bounds.append("g")
-                .attr("class", "grid")
-                .call(y_gridlines()
-                    .tickSize(-dimensions.boundedWidth)
-                    .tickFormat("")
-                )
+            .call(yAxisGenerator)
+            .attr("class", "grid")
+            .attr("font-family", "Arial")
+            .attr("font-size", "10");
+
+            // bounds.append("g")
+            //     .attr("class", "grid")
+            //     .call(y_gridlines()
+            //         .tickSize(-dimensions.boundedWidth)
+            //         .tickFormat("")
+            //     )
+            //
+            //     bounds.append("g")
+            //         .attr("class", "grid")
+            //         .call(x_gridlines()
+            //             .tickSize(-dimensions.boundedWidth)
+            //             .tickFormat("")
+            //         )
 
 
 
@@ -355,8 +407,8 @@
           };
         }
 
-        var dots_g = bounds.append("g")
-        // .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')')
+        var dots_g = wrapper.append("g")
+        .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')')
         .attr("clip-path", "url(#clip)")
         .classed("dots_g", true);
 
@@ -371,6 +423,7 @@
         .attr("width", dimensions.boundedWidth)
         .attr("height", dimensions.boundedHeight)
         .style("fill", "none")
+        .style("stroke","black")
         .style("pointer-events", "all")
         // .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')')
         .call(zoom);
@@ -378,11 +431,22 @@
         function zoomed() {
           var new_xScale = d3.event.transform.rescaleX(xScale);
           var new_yScale = d3.event.transform.rescaleY(yScale);
-          gx.call(xAxisGenerator.scale(new_xScale));
-          gy.call(yAxisGenerator.scale(new_yScale));
-          dots.data(arr)
-           .attr('cx', function(d) {return new_xScale(xAccessor(d))})
-           .attr('cy', function(d) {return new_yScale(yAccessor(d))});
+
+          gx
+          .call(xAxisGenerator.scale(new_xScale))
+          .attr("font-family", "Arial")
+          .attr("font-size", "10");
+
+          gy
+          .call(yAxisGenerator.scale(new_yScale))
+          .attr("font-family", "Arial")
+          .attr("font-size", "10");
+
+
+          dots
+          .data(arr)
+          .attr('cx', function(d) {return new_xScale(xAccessor(d))})
+          .attr('cy', function(d) {return new_yScale(yAccessor(d))});
       }
 
       let dots = dots_g.selectAll("circle")
@@ -429,19 +493,7 @@
                   .attr("fill", color_ind)
           });
 
-        const remove_zero = d => (d / 1e6) + "M";
 
-        const yAxisGenerator = d3.axisLeft()
-            .scale(yScale)
-            .ticks(5)
-            .tickFormat(remove_zero);
-
-        const yAxis = bounds.append("g")
-            .attr('id', "axis-y")
-            .call(yAxisGenerator)
-            .attr("font-family", "Arial")
-            .attr("font-size", "10")
-            .attr("text-align","left")
 
         // average line
 
@@ -534,28 +586,15 @@
                         d3.select(this).text(roundNo_2(i(t)));
                       };
                     });
-        const add_sign = d => "$" + add_commas(d);
-        const xAxisGenerator = d3.axisBottom()
-            .scale(xScale)
-            .ticks(5)
-            .tickFormat(add_sign)
 
-        const xAxis = bounds.append("g")
-            .attr('id', "axis-x")
-            .call(xAxisGenerator)
-            .style("transform", `translateY(${
-        dimensions.boundedHeight
-      }px)`)
-            .attr("font-family", "Arial")
-            .attr("font-size", "10")
 
         const xAxisLabel = xAxis.append("text")
-            .attr("x", dimensions.boundedWidth / 2)
+            .attr("x", dimensions.boundedWidth / 2 - 30)
             .attr("y", dimensions.margin.bottom)
             .style("font-family", "Arial")
             .style("font-size", "10")
             .style("font-weight", "bold")
-            .html("Cost per Action")
+            .html("CPA")
             .attr("fill", "black")
 
         const yAxisLabel = yAxis.append("text")
