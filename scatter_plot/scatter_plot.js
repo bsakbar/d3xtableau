@@ -133,7 +133,7 @@
       loadSelectedMarks(worksheetName);
     }
     removeEventListener = worksheet.addEventListener(
-      tableau.TableauEventType.MarkSelectionChanged, marksSelectedEventHandler);
+      tableau.TableauEventType.FilterChanged, marksSelectedEventHandler);
   }
 
   function saveSheetAndLoadSelectedMarks(worksheetName) {

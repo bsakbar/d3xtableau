@@ -101,11 +101,11 @@
         const marksSelectedEventHandler = (event) => {
             loadSelectedMarks(worksheetName);
         }
-        removeEventListener = worksheet.addEventListener(
-            tableau.TableauEventType.MarkSelectionChanged, marksSelectedEventHandler);
-
         // removeEventListener = worksheet.addEventListener(
-        //     tableau.TableauEventType.FilterChanged, marksSelectedEventHandler);
+        //     tableau.TableauEventType.MarkSelectionChanged, marksSelectedEventHandler);
+
+        removeEventListener = worksheet.addEventListener(
+            tableau.TableauEventType.FilterChanged, marksSelectedEventHandler);
     }
 
     function saveSheetAndLoadSelectedMarks(worksheetName) {
@@ -201,6 +201,33 @@
            dimensions.margin.top
          }px)`)
 
+         var defs = bounds.append("defs");
+
+  			defs.append("radialGradient")
+  				.attr("id", "gradient1")
+  				.selectAll("stop")
+  				.data([
+  						{offset: "0%", color: "#5EC7EB"},
+              {offset: "50%", color: "#5EC7EB"},
+  						{offset: "100%", color: "#1b2326"}
+  					])
+          .style("mix-blend-mode", "multiply")
+  				.enter().append("stop")
+  				.attr("offset", function(d) { return d.offset; })
+  				.attr("stop-color", function(d) { return d.color; });
+
+          defs.append("radialGradient")
+            .attr("id", "gradient2")
+            .selectAll("stop")
+            .data([
+                {offset: "80%", color: "#4e79a7"},
+                {offset: "50%", color: "#4e79a7"},
+                {offset: "100%", color: "#1b2326"}
+              ])
+            .enter().append("stop")
+            .attr("offset", function(d) { return d.offset; })
+            .attr("stop-color", function(d) { return d.color; });
+
 
 
         const div = d3.select("body").append("div")
@@ -295,11 +322,31 @@
                 .style("opacity", 0.6)
         };
 
+        function mouseOnLine(d) {
+            div.transition()
+                .duration(200)
+                .style("opacity", 0.95)
+            d3.select(this)
+                .style("opacity", 0.3)
+            div.html("Partner:" + d.partner + "<br/>" + "Impressions: " + d.impressions)
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+        };
+
+        function mouseOutLine(d) {
+            div.transition()
+                .duration(200)
+                .style("opacity", 0);
+            d3.select(this)
+            .style("opacity", 0);
+        };
+
         var clip = bounds.append("defs").append("svg:clipPath")
             .attr("id", "clip")
             .append("svg:rect")
             .attr("width", dimensions.boundedWidth)
             .attr("height", dimensions.boundedHeight)
+            .attr("stroke","none")
             .attr("x", 0)
             .attr("y", 0);
 
@@ -311,6 +358,7 @@
             .on("end", updateChart)
 
         var area = bounds.append("g")
+            .attr("class","areas")
             .attr("clip-path", "url(#clip)")
 
         const path1 = d3.area()
@@ -322,8 +370,9 @@
         area.append("path")
             .datum(arr_google)
             .attr("class", "area1")
+            // .attr("fill", "url(#gradient1)")
             .attr("fill", "#5EC7EB")
-            .attr("opacity", 0.9)
+            .attr("opacity", .9)
             .attr("d", path1)
 
         area
@@ -341,9 +390,27 @@
         area.append("path")
             .datum(arr_bing)
             .attr("class", "area2")
-            .attr("fill", '#4e79a7')
-            // .attr("opacity", 0.8)
+            // .attr("fill", "url(#gradient2)")
+            .attr("fill", "#4e79a7")
+            .attr("opacity", .9)
             .attr("d", path2)
+
+        area.selectAll("line")
+           .data(arr)
+           .enter()
+           .append("line")
+           .attr("stroke","#1b2326")
+           .style("opacity",0)
+           .attr("x1", d => xScale(xAccessor(d)))
+           .attr("y1", d => yScale(yAccessor(d)))
+           .attr("x2",d => xScale(xAccessor(d)))
+           .attr("y2",dimensions.boundedHeight);
+
+        area.selectAll("line")
+            .on("mouseover", mouseOnLine)
+            .on("mouseout", mouseOutLine);
+
+
 
 
         const path3 = d3.area()
@@ -361,6 +428,8 @@
             .attr("d", path3)
 
 
+
+
         const curve2 = d3.curveLinear
 
 
@@ -374,8 +443,10 @@
             .data(arr)
             .attr("class", "ctrLine")
             .attr("fill", 'none')
+            .attr("stroke-width","0.4px")
             .attr("stroke", "white")
             .attr("d", line1(arr))
+
 
         area.selectAll("circle")
            .data(arr)
@@ -392,6 +463,26 @@
         area.selectAll("circle")
             .on("mouseover", mouseOn)
             .on("mouseout", mouseOut);
+
+        // area.selectAll("path")
+        //     .on("mouseover", highlight)
+        //     .on("mouseout", noHighlight);
+
+            function highlight(d) {
+                    d3.select('.areas')
+                    .transition()
+                    .duration(500)
+                    .style("opacity", 0)
+                    d3.select(this).style("opacity", 1)
+            };
+
+            function noHighlight(d) {
+                d3.select('.areas')
+                .transition()
+                .duration(500)
+                .style("opacity", 1)
+            };
+
 
         const avgLine_y = bounds.append("line")
             .attr("y1", d => y2Scale(average_y2(d)))
@@ -426,7 +517,7 @@
             .attr("x", 10)
             .style("font-size", "12px")
             .attr("font-family", "Arial")
-            .attr("fill", "#1B2326")
+            .attr("fill", "white")
 
 
         var idleTimeout
@@ -451,7 +542,7 @@
 
             // Update axis and area position
             xAxis.transition().duration(1000).call(d3.axisBottom(xScale))
-            // yAxis.transition().duration(1000).call(d3.axisLeft(yScale))
+
 
             area
                 .select('.area1')
@@ -468,18 +559,13 @@
                 .transition()
                 .duration(1000)
                 .attr("d", path3)
-            area
-                .select('.ctrLine')
-                .transition()
-                .duration(1000)
-                .attr("d", line1(arr))
-
-            area
-                .select('.endPoints')
-                .transition()
-                .duration(1000)
-                .attr("cx", d => xScale(xAccessor(d)))
-                .attr("cy", d => y2Scale(y2Accessor(d)))
+            // area
+            //     .select('.ctrLine')
+            //     .transition()
+            //     .duration(1000)
+            //     .attr("d", line1(arr))
+            //
+            //
         }
 
         bounds.on("dblclick", function() {
@@ -497,16 +583,12 @@
                 .select('.area3')
                 .transition()
                 .attr("d", path3)
-            area
-                .select('.ctrLine')
-                .transition()
-                .attr("d", line1(arr))
-            area
-                .select('.endPoints')
-                .transition()
-               .attr("cx", d => xScale(xAccessor(d)))
-               .attr("cy", d => y2Scale(y2Accessor(d)))
-               .attr("r", 1.5)
+            // area
+            //     .select('.ctrLine')
+            //     .transition()
+            //     .attr("d", line1(arr))
+
+
         });
 
         const remove_zero = d => (d / 1e4) + "K";

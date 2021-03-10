@@ -121,15 +121,15 @@ div.tooltip {
   padding-top: 50px;
 }
 
-.line {
+/* .line {
   fill: none;
   stroke: lightgrey;
   stroke-width: 2px;
-}
+} */
 
 .grid line {
-  stroke: lightgrey;
-  stroke-opacity: 0.5;
+  stroke: white;
+  stroke-opacity: 0.2;
 }
 
 .grid_y2 line {
@@ -141,10 +141,7 @@ div.tooltip {
   stroke-width: 0;
 }
 
-.ctrLine path{
-  stroke-width: 0.3px;
-  opacity: 0.5;
-}
+
 .btn {
 	color: #5EC7EB!important;
 	background-color: transparent;
