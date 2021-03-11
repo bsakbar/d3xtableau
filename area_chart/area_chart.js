@@ -168,7 +168,7 @@
             window.innerWidth * 0.95,
         ])
         const height = d3.min([
-            window.innerHeight * 0.8,
+            window.innerHeight * 0.85,
         ])
 
 
