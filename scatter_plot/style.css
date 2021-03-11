@@ -24,6 +24,13 @@ form{
 
 }
 
+#radio_partner{
+  font-size: 10px;
+}
+#radio_campaign{
+  font-size: 10px;
+}
+
 div.DTS div.dataTables_scrollBody {
     background-color: white;
 }

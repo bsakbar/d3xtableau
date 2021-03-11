@@ -176,7 +176,7 @@
             width: width,
             height: height,
             margin: {
-                top: 30,
+                top: 10,
                 right: 50,
                 bottom: 40,
                 left: 50,
