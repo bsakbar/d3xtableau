@@ -6,7 +6,7 @@
 
     $(document).ready(function() {
         tableau.extensions.initializeAsync().then(function() {
-            const savedSheetName = "D3 DATA"
+            const savedSheetName = "D3 DATA (2)"
             // const savedSheetName = 'Partner Display Performance'
             loadSelectedMarks(savedSheetName);
 
