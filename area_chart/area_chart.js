@@ -176,9 +176,9 @@
             width: width,
             height: height,
             margin: {
-                top: 10,
+                top: 5,
                 right: 50,
-                bottom: 40,
+                bottom: 30,
                 left: 50,
             },
         }
