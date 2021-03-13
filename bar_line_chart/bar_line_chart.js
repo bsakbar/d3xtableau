@@ -6,7 +6,7 @@
 
     $(document).ready(function() {
         tableau.extensions.initializeAsync().then(function() {
-            const savedSheetName = "D3 DATA"
+            const savedSheetName = "D3 DATA (2)"
             // const savedSheetName = 'Partner Display Performance'
             loadSelectedMarks(savedSheetName);
 
@@ -168,7 +168,7 @@
             window.innerWidth * 0.95,
         ])
         const height = d3.min([
-            window.innerHeight * 0.8,
+            window.innerHeight * 0.9,
         ])
 
 
@@ -234,25 +234,24 @@
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-            const xxScale = d3.scaleTime()
-                .domain(d3.extent(arr, xAccessor))
-                .range([0, dimensions.boundedWidth])
-
-            const xScale = d3.scaleBand()
-            .domain(d3.range(xxScale.length))
+        const xxScale = d3.scaleTime()
+            .domain(d3.extent(arr, xAccessor))
             .range([0, dimensions.boundedWidth])
-            .padding(0.4)
 
+        const xScale = d3.scaleBand()
+            .range([0, dimensions.boundedWidth])
+            .padding(0.6)
 
         const yScale = d3.scaleLinear()
-            .domain(d3.extent(arr, yAccessor))
             .range([dimensions.boundedHeight, 0])
-            .nice()
 
         const y2Scale = d3.scaleLinear()
             .domain(d3.extent(arr, y2Accessor))
             .range([dimensions.boundedHeight, 0])
             // .nice()
+
+            xScale.domain(arr.map(xAccessor));
+            yScale.domain([0, d3.max(arr, yAccessor)]);
 
         const b_sizze = d3.scaleLinear()
             .domain(d3.extent(arr, clicks))
@@ -260,7 +259,7 @@
 
 
         function x_gridlines() {
-            return d3.axisBottom(xScale)
+            return d3.axisBottom(xxScale)
                 .ticks(0)
         }
 
@@ -361,188 +360,184 @@
                 [0, 0],
                 [dimensions.boundedWidth, dimensions.boundedHeight]
             ])
-            // .on("end", updateChart)
+            .on("end", updateChart)
 
         var area = bounds.append("g")
             .attr("class","areas")
             .attr("clip-path", "url(#clip)")
 
-        // const path1 = d3.area()
-        //     .x(d => xScale(xAccessor(d)))
-        //     .y0(yScale(0))
-        //     .y1(d => yScale(yAccessor(d)))
-        //     .curve(curve)
 
-        area.append("g")
-            .attr("fill", "#5EC7EB")
-            .selectAll("rect")
-            .datum(arr_google)
+        area
+            .selectAll(".bar")
+            .data(arr_google)
+            .enter()
             .append("rect")
-              .attr("x", d => xScale(xAccessor(d)))
-              .attr("y", d => yScale(yAccessor(d)))
-              .attr("height", d => yScale(0) - yScale(yAccessor(d)))
-              .attr("width", xScale.bandwidth());
+            .attr("class","bar")
+            .attr("fill", "#5EC7EB")
+            .attr("x", d => xScale(xAccessor(d)))
+            .attr("y", d => yScale(yAccessor(d)))
+            .attr("height", d=> dimensions.boundedHeight -  yScale(yAccessor(d)))
+            .attr("width", xScale.bandwidth());
+
+        area
+            .selectAll(".bar2")
+            .data(arr_bing)
+            .enter()
+            .append("rect")
+            .attr("class","bar2")
+            .attr("fill", "#4e79a7")
+            .attr("x", d => xScale(xAccessor(d)))
+            .attr("y", d => yScale(yAccessor(d)))
+            .attr("height", d=> dimensions.boundedHeight -  yScale(yAccessor(d)))
+            .attr("width", xScale.bandwidth());
+
+        area
+            .selectAll(".bar3")
+            .data(arr_yahoo)
+            .enter()
+            .append("rect")
+            .attr("class","bar3")
+            .attr("fill", "#FF8500")
+            .attr("x", d => xScale(xAccessor(d)))
+            .attr("y", d => yScale(yAccessor(d)))
+            .attr("height", d=> dimensions.boundedHeight -  yScale(yAccessor(d)))
+            .attr("width", xScale.bandwidth());
+
+        area
+            .append("g")
+            .attr("class", "brush")
+            .call(brush);
+
+        const curve2 = d3.curveLinear
+
+        const line1 = d3.line()
+            .x(d => xScale(xAccessor(d)))
+            .y(d => y2Scale(y2Accessor(d)))
+            .curve(curve2)
+
+        area.append("path")
+            .data(arr)
+            .attr("class", "ctrLine")
+            .attr("fill", 'none')
+            .attr("stroke-width","0.4px")
+            .attr("stroke", "white")
+            .attr("d", line1(arr))
 
 
+        area.selectAll("circle")
+           .data(arr)
+           .enter()
+           .append("circle")
+           .attr("class", "endPoints")
+           .attr("fill", "white")
+           .style("opacity", 0.6)
+           .attr("stroke", "none")
+           .attr("cx", d => xScale(xAccessor(d)))
+           .attr("cy", d => y2Scale(y2Accessor(d)))
+           .attr("r", d => b_sizze(clicks(d)))
+
+        area.selectAll("circle")
+            .on("mouseover", mouseOn)
+            .on("mouseout", mouseOut);
 
 
+        const avgLine_y = bounds.append("line")
+            .attr("y1", d => y2Scale(average_y2(d)))
+            .attr("y2", d => y2Scale(average_y2(d)))
+            .attr("x1", 0)
+            .attr("x2", dimensions.boundedWidth)
+            .attr("stroke", "#D93251")
+            .attr("stroke-width", "2px")
+            .attr("weight", 3)
+            .attr("stroke-dasharray", "5px 5px")
+
+        const avgLabel_y = bounds.append("text")
+            .attr("y", d => y2Scale(average_y2(d)) - 5)
+            .attr("x", 10)
+            .style("font-weight", "bold")
+            .text("Avg CTR:")
+            .attr("fill", "white")
+            .style("font-size", "12px")
+            .attr("font-family", "Arial")
+
+        const avgLabel_y_2 = bounds
+            .append("g")
+        avgLabel_y_2
+            .selectAll("text")
+            .data(arr)
+            .enter()
+            .append("text")
+            .text(d => average_y2(d) * 10 + "%")
+            .attr("y", d => y2Scale(average_y2(d)) + 15)
+            .attr("x", 10)
+            .style("font-size", "12px")
+            .attr("font-family", "Arial")
+            .attr("fill", "white")
 
 
-        // const curve2 = d3.curveLinear
-        //
-        //
-        // const line1 = d3.line()
-        //     .x(d => xScale(xAccessor(d)))
-        //     .y(d => y2Scale(y2Accessor(d)))
-        //     .curve(curve2)
-        //
-        //
-        // area.append("path")
-        //     .data(arr)
-        //     .attr("class", "ctrLine")
-        //     .attr("fill", 'none')
-        //     .attr("stroke-width","0.4px")
-        //     .attr("stroke", "white")
-        //     .attr("d", line1(arr))
-        //
-        //
-        // area.selectAll("circle")
-        //    .data(arr)
-        //    .enter()
-        //    .append("circle")
-        //    .attr("class", "endPoints")
-        //    .attr("fill", "white")
-        //    .style("opacity", 0.6)
-        //    .attr("stroke", "none")
-        //    .attr("cx", d => xScale(xAccessor(d)))
-        //    .attr("cy", d => y2Scale(y2Accessor(d)))
-        //    .attr("r", d => b_sizze(clicks(d)))
-        //
-        // area.selectAll("circle")
-        //     .on("mouseover", mouseOn)
-        //     .on("mouseout", mouseOut);
-        //
-        //
-        //     function highlight(d) {
-        //             d3.select('.areas')
-        //             .transition()
-        //             .duration(500)
-        //             .style("opacity", 0)
-        //             d3.select(this).style("opacity", 1)
-        //     };
-        //
-        //     function noHighlight(d) {
-        //         d3.select('.areas')
-        //         .transition()
-        //         .duration(500)
-        //         .style("opacity", 1)
-        //     };
-        //
-        //
-        // const avgLine_y = bounds.append("line")
-        //     .attr("y1", d => y2Scale(average_y2(d)))
-        //     .attr("y2", d => y2Scale(average_y2(d)))
-        //     .attr("x1", 0)
-        //     .attr("x2", dimensions.boundedWidth)
-        //     .attr("stroke", "#D93251")
-        //     .attr("stroke-width", "2px")
-        //     .attr("weight", 3)
-        //     .attr("stroke-dasharray", "5px 5px")
-        //
-        // const avgLabel_y = bounds.append("text")
-        //     .attr("y", d => y2Scale(average_y2(d)) - 5)
-        //     .attr("x", 10)
-        //     .style("font-weight", "bold")
-        //     .text("Avg CTR:")
-        //     .attr("fill", "white")
-        //     .style("font-size", "12px")
-        //     .attr("font-family", "Arial")
-        //
-        // const avgLabel_y_2 = bounds
-        //     .append("g")
-        // avgLabel_y_2
-        //     .selectAll("text")
-        //     .data(arr)
-        //     .enter()
-        //     .append("text")
-        //     .text(d => average_y2(d) * 10 + "%")
-        //     .attr("y", d => y2Scale(average_y2(d)) + 15)
-        //     .attr("x", 10)
-        //     .style("font-size", "12px")
-        //     .attr("font-family", "Arial")
-        //     .attr("fill", "white")
-        //
+        var idleTimeout
 
-        // var idleTimeout
-        //
-        // function idled() {
-        //     idleTimeout = null;
-        // }
-        //
-        // function updateChart() {
-        //
-        //     // What are the selected boundaries?
-        //     var extent = d3.event.selection
-        //
-        //     // If no selection, back to initial coordinate. Otherwise, update X axis domain
-        //     if (!extent) {
-        //         if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
-        //         xScale.domain([4, 8])
-        //     } else {
-        //         xScale.domain([xScale.invert(extent[0]), xScale.invert(extent[1])])
-        //         area.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
-        //     }
-        //
-        //     // Update axis and area position
-        //     xAxis.transition().duration(1000).call(d3.axisBottom(xScale))
-        //
-        //
-        //     area
-        //         .select('.area1')
-        //         .transition()
-        //         .duration(1000)
-        //         .attr("d", path1)
-        //     area
-        //         .select('.area2')
-        //         .transition()
-        //         .duration(1000)
-        //         .attr("d", path2)
-        //     area
-        //         .select('.area3')
-        //         .transition()
-        //         .duration(1000)
-        //         .attr("d", path3)
-        //     // area
-        //     //     .select('.ctrLine')
-        //     //     .transition()
-        //     //     .duration(1000)
-        //     //     .attr("d", line1(arr))
-        //     //
-        //     //
-        // }
-        //
-        // bounds.on("dblclick", function() {
-        //     xScale.domain(d3.extent(arr, xAccessor))
-        //     xAxis.transition().call(d3.axisBottom(xScale))
-        //     area
-        //         .select('.area1')
-        //         .transition()
-        //         .attr("d", path1)
-        //     area
-        //         .select('.area2')
-        //         .transition()
-        //         .attr("d", path2)
-        //     area
-        //         .select('.area3')
-        //         .transition()
-        //         .attr("d", path3)
-        //     // area
-        //     //     .select('.ctrLine')
-        //     //     .transition()
-        //     //     .attr("d", line1(arr))
-        //
-        //
-        // });
+        function idled() {
+            idleTimeout = null;
+        }
+
+        function updateChart() {
+
+            // What are the selected boundaries?
+            var extent = d3.event.selection
+
+            // If no selection, back to initial coordinate. Otherwise, update X axis domain
+            if (!extent) {
+                if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
+                xxScale.domain([4, 8])
+            } else {
+                xxScale.domain([xxScale.invert(extent[0]), xxScale.invert(extent[1])])
+                area.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
+            }
+
+            // Update axis and area position
+            xAxis.transition().duration(1000).call(d3.axisBottom(xxScale))
+
+
+            area
+                .select('.bar1')
+                .transition()
+                .duration(1000)
+                .attr("x", d => xScale(xAccessor(d)))
+
+            area
+                .select('.bar2')
+                .transition()
+                .duration(1000)
+                .attr("x", d => xScale(xAccessor(d)))
+            area
+                .select('.bar3')
+                .transition()
+                .duration(1000)
+                .attr("x", d => xScale(xAccessor(d)))
+
+        }
+
+        bounds.on("dblclick", function() {
+            xxScale.domain(d3.extent(arr, xAccessor))
+            xAxis.transition().call(d3.axisBottom(xxScale))
+            area
+                .select('.bar1')
+                .transition()
+                .attr("x", d => xScale(xAccessor(d)))
+                .attr("y", d => yScale(yAccessor(d)))
+            area
+                .select('.bar2')
+                .transition()
+                .attr("x", d => xScale(xAccessor(d)))
+                .attr("y", d => yScale(yAccessor(d)))
+            area
+                .select('.bar3')
+                .transition()
+                .attr("x", d => xScale(xAccessor(d)))
+                .attr("y", d => yScale(yAccessor(d)))
+
+        });
 
         const remove_zero = d => (d / 1e4) + "K";
 
@@ -578,7 +573,7 @@
 
 
         const xAxisGenerator = d3.axisBottom()
-            .scale(xScale)
+            .scale(xxScale)
             .ticks(10)
             .tickFormat(formatDate);
 
