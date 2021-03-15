@@ -110,11 +110,11 @@ div.tooltip {
     pointer-events: none;
 }
 
-path{
+.grid_y2 path{
   stroke: none;
 }
 
-.ctrLine path{
+.ctrLine line{
   stroke: white;
   stroke-width:0.4px;
 }
