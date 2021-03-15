@@ -109,13 +109,24 @@ div.tooltip {
     border-radius: 8px;
     pointer-events: none;
 }
+
+path{
+  stroke: none;
+}
+
 .axisLine text{
   fill: white;
 }
+
 .axisLine path{
-  stroke: white;
-  opacity: 0.4;
-}
+    stroke: white;
+    opacity: 0.5;
+  }
+
+  .axisLine line{
+    stroke: white;
+    opacity: 0.5;
+  }
 #wrapper{
   display: block;
   padding-top: 10px;

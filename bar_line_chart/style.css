@@ -114,8 +114,15 @@ div.tooltip {
 }
 .axisLine path{
   stroke: white;
-  opacity: 0.4;
+  opacity: 0.5;
 }
+
+.axisLine line{
+  stroke: white;
+  opacity: 0.5;
+}
+
+
 #wrapper{
   display: block;
   padding-top: 10px;
@@ -141,6 +148,9 @@ div.tooltip {
   stroke-width: 0;
 }
 
+path{
+  stroke: none;
+}
 
 .btn {
 	color: #5EC7EB!important;
