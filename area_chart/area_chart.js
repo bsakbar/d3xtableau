@@ -443,8 +443,6 @@
             .data(arr)
             .attr("class", "ctrLine")
             .attr("fill", 'none')
-            .attr("stroke-width","0.4px")
-            .attr("stroke", "white")
             .attr("d", line1(arr))
 
 

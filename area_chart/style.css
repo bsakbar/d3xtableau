@@ -114,6 +114,11 @@ path{
   stroke: none;
 }
 
+.ctrLine path{
+  stroke: white;
+  stroke-width:0.4px;
+}
+
 .axisLine text{
   fill: white;
 }
