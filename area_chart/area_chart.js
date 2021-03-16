@@ -165,6 +165,51 @@
             }
         }
 
+        if (document.querySelector('input[name="check"]')) {
+          document.querySelectorAll('input[name="check"]').forEach((elem) => {
+            elem.addEventListener("change", function() {
+              var check_1 = document.getElementById("check_1");
+              var check_2 = document.getElementById("check_2");
+              var check_3 = document.getElementById("check_3");
+              var area1 = document.getElementById("area1");
+              var area2 = document.getElementById("area2");
+              var area3 = document.getElementById("area3");
+                  if (check_1.checked == false ){
+                    area1.style.opacity = "0";
+                    area1.style.transition = "opacity .7s linear";
+                    // area1.style.visibility = "hidden";
+                  }
+                  if (check_2.checked == false ){
+                    // area2.style.visibility = "hidden";
+                    area2.style.opacity = "0";
+                    area2.style.transition = "opacity .7s linear";
+
+                  }
+                  if (check_3.checked == false ){
+                    // area3.style.visibility = "hidden";
+                    area3.style.opacity = "0";
+                    area3.style.transition = "opacity .7s linear";
+
+                  }
+                  if (check_1.checked == true ){
+                    area1.style.opacity = ".9";
+                    area1.style.transition = "visibility 0s .7s, opacity .7s linear";
+                    // area1.style.visibility = "visible";
+                  }
+                  if (check_2.checked == true ){
+                    area2.style.opacity = ".9";
+                    area2.style.transition = "visibility 0s .7s, opacity .7s linear";
+                    // area2.style.visibility = "visible";
+                  }
+                  if (check_3.checked == true ){
+                    area3.style.opacity = ".9";
+                    area3.style.transition = "visibility 0s .7s, opacity .7s linear";
+                    // area3.style.visibility = "visible";
+                  }
+            });
+          });
+        }
+
 
         const width = d3.min([
             window.innerWidth * 0.95,
@@ -369,13 +414,16 @@
             .y1(d => yScale(yAccessor(d)))
             .curve(curve)
 
+
         area.append("path")
             .datum(arr_google)
+            .attr("id", "area1")
             .attr("class", "area1")
             // .attr("fill", "url(#gradient1)")
             .attr("fill", "#5EC7EB")
             .attr("opacity", .9)
             .attr("d", path1)
+
 
         area
             .append("g")
@@ -389,8 +437,10 @@
             .y1(d => yScale(yAccessor(d)))
             .curve(curve)
 
+
         area.append("path")
             .datum(arr_bing)
+            .attr("id", "area2")
             .attr("class", "area2")
             // .attr("fill", "url(#gradient2)")
             .attr("fill", "#4e79a7")
@@ -424,6 +474,7 @@
 
         area.append("path")
             .datum(arr_yahoo)
+            .attr("id", "area3")
             .attr("class", "area3")
             .attr("fill", '#FF8500')
             .attr("opacity", 0.8)
