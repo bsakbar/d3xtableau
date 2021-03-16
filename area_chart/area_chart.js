@@ -141,7 +141,9 @@
     function drawDotChart(arr) {
         $('#wrapper').empty();
         const dateParser = d3.timeParse("%Y-%m-%d")
-        const formatDate = d3.timeFormat("%b %-d")
+        const formatDate = d3.timeFormat("%b %-d, %Y")
+        // const formatDate = d3.timeFormat("%b %d")
+        const formatDate2 = d3.timeFormat("%b %d")
         const xAccessor = d => dateParser(d.date)
         const yAccessor = d => d.impressions
         const y2Accessor = d => d.ctr
@@ -541,7 +543,10 @@
             }
 
             // Update axis and area position
-            xAxis.transition().duration(1000).call(d3.axisBottom(xScale))
+            xAxis.transition().duration(1000).call(
+              d3.axisBottom(xScale)
+              .ticks(10)
+              .tickFormat(formatDate2))
 
 
             area
@@ -570,7 +575,9 @@
 
         bounds.on("dblclick", function() {
             xScale.domain(d3.extent(arr, xAccessor))
-            xAxis.transition().call(d3.axisBottom(xScale))
+            xAxis.transition().call(d3.axisBottom(xScale)
+            .ticks(10)
+            .tickFormat(formatDate))
             area
                 .select('.area1')
                 .transition()
