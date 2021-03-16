@@ -59,7 +59,17 @@ div.DTS div.dataTables_scrollBody {
   /* margin-top: 10px; */
 }
 
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  background-color: #5EC7EB;
+}
+
 .legend_google{
+  outline:none;
   display: flex;
   color: white;
   background-color: #5EC7EB;

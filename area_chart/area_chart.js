@@ -141,7 +141,7 @@
     function drawDotChart(arr) {
         $('#wrapper').empty();
         const dateParser = d3.timeParse("%Y-%m-%d")
-        const formatDate = d3.timeFormat("%B %-d, %Y")
+        const formatDate = d3.timeFormat("%b %-d")
         const xAccessor = d => dateParser(d.date)
         const yAccessor = d => d.impressions
         const y2Accessor = d => d.ctr

@@ -366,6 +366,8 @@
             .attr("class","areas")
             .attr("clip-path", "url(#clip)")
 
+      
+
 
         area
             .selectAll(".bar")
