@@ -271,7 +271,7 @@
             width: width,
             height: height,
             margin: {
-                top: 30,
+                top: 10,
                 right: 50,
                 bottom: 30,
                 left: 60,
@@ -371,7 +371,7 @@
             .call(xAxisGenerator)
             .attr("class", "grid")
             .attr("font-family", "Arial")
-            .attr("font-size", "10")
+            .attr("font-size", "8")
             .attr("transform", "translate(0," + dimensions.boundedHeight + ")");
 
 
@@ -423,7 +423,7 @@
         .attr("width", dimensions.boundedWidth)
         .attr("height", dimensions.boundedHeight)
         .style("fill", "none")
-        .style("stroke","black")
+        .style("stroke","none")
         .style("pointer-events", "all")
         // .attr('transform', 'translate(' + dimensions.margin.left + ',' + dimensions.margin.top + ')')
         .call(zoom);

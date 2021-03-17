@@ -21,15 +21,9 @@ form{
   float: right;
   padding-right: 40px;
   padding-top: 20px;
-
+  font-size: 12px;
 }
 
-.radio_partner{
-  font-size: 10px !important;
-}
-.radio_campaign{
-  font-size: 10px !important;
-}
 
 div.DTS div.dataTables_scrollBody {
     background-color: white;
@@ -37,13 +31,13 @@ div.DTS div.dataTables_scrollBody {
 
 .sheet_name {
     background-color: #1B2326;
-    font-size: 22px;
+    font-size: 18px;
     font-family: "League Gothic";
     /* text-transform: uppercase; */
     color:white;
-    padding-left: 5px;
-    margin-top: -3px;
-    height: 30px;
+    padding-left: 4px;
+    margin-top: -4px;
+    height: 23px;
     display: flex;
 }
 
@@ -53,7 +47,7 @@ div.DTS div.dataTables_scrollBody {
 
 .legends{
   display: flex;
-  margin-top:10px;
+  margin-top:6px;
 }
 
 .legend_name{
@@ -62,8 +56,8 @@ div.DTS div.dataTables_scrollBody {
   color: white;
   font-family: "Arial";
   font-size: 10px;
-  margin-left:5px;
-  /* margin-top: 10px; */
+  margin-left:3px;
+  /* margin-top: 4px; */
 }
 
 .legend_meet{
@@ -73,7 +67,7 @@ div.DTS div.dataTables_scrollBody {
   height: 10px;
   width:10px;
   margin-left: 10px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .legend_below{
@@ -83,7 +77,7 @@ div.DTS div.dataTables_scrollBody {
   height: 10px;
   width:10px;
   margin-left: 10px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .legend_over{
   display: flex;
@@ -92,7 +86,7 @@ div.DTS div.dataTables_scrollBody {
   height: 10px;
   width:10px;
   margin-left: 10px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .sheet_name_2 {
     /* font-size: 28px; */
@@ -119,7 +113,7 @@ div.tooltip {
 
 #wrapper{
   display: block;
-  padding-top: 50px;
+
 }
 
 .line {
