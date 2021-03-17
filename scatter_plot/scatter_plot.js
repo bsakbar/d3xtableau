@@ -262,7 +262,7 @@
 
 
         const width = d3.min([
-            window.innerWidth * 0.98 ,
+            window.innerWidth  ,
         ])
         const height = d3.min([
             window.innerHeight * 0.8,
@@ -274,7 +274,7 @@
                 top: 10,
                 right: 50,
                 bottom: 30,
-                left: 60,
+                left:50,
             },
         }
         dimensions.boundedWidth = dimensions.width -
@@ -336,7 +336,6 @@
 
 
 
-
             const yAxisGenerator = d3.axisLeft()
                 .scale(yScale)
                 .ticks(6)
@@ -345,6 +344,7 @@
                 .tickFormat(remove_zero);
 
             const yAxis = bounds.append("g")
+
                 .attr('id', "axis-y")
                 .attr("font-family", "Arial")
                 .attr("font-size", "8")
@@ -358,6 +358,7 @@
                 .tickFormat(add_sign)
 
             const xAxis = bounds.append("g")
+                .attr("class","axisLine")
                 .attr('id', "axis-x")
                 .style("transform", `translateY(${
             dimensions.boundedHeight
@@ -368,7 +369,8 @@
 
             var gx = bounds.append("g")
             .call(xAxisGenerator)
-            .attr("class", "grid")
+            .attr("class","axisLine")
+
             .attr("font-family", "Arial")
             .attr("font-size", "8")
             .attr("transform", "translate(0," + dimensions.boundedHeight + ")");
@@ -376,7 +378,8 @@
 
             var gy = bounds.append("g")
             .call(yAxisGenerator)
-            .attr("class", "grid")
+            .attr("class","axisLine")
+
             .attr("font-family", "Arial")
             .attr("font-size", "8");
 
@@ -517,7 +520,7 @@
               .attr("y", 10)
               .text("Avg CPA:")
               .attr("fill", "green")
-              .style("font-size", "12px")
+              .style("font-size", "10px")
               .style("font-weight", "bold")
               .attr("font-family", "Arial")
 
@@ -535,7 +538,7 @@
                .attr("x", d => xScale(average_x(d)) + 5)
                .attr("y", 25)
                .attr("opacity", 0)
-              .style("font-size", "12px")
+              .style("font-size", "10px")
               .attr("font-family", "Arial")
                .attr("fill","#1B2326")
                  .transition()
@@ -555,7 +558,7 @@
                     .style("font-weight", "bold")
                     .text("Avg Imp:")
                     .attr("fill", "green")
-                    .style("font-size", "12px")
+                    .style("font-size", "10px")
                     .attr("font-family", "Arial")
 
               var roundNo_2 = d3.format(".2s");
@@ -569,10 +572,10 @@
                     .enter()
                     .append("text")
                     .text( d => average_y(d))
-                    .attr("y", d => yScale(average_y(d)) + 15)
+                    .attr("y", d => yScale(average_y(d)) + 10)
                     .attr("x", 10)
                     .attr("opacity", 0)
-                   .style("font-size", "12px")
+                   .style("font-size", "10px")
                    .attr("font-family", "Arial")
                     .attr("fill","#1B2326")
                       .transition()
@@ -588,8 +591,8 @@
 
 
         const xAxisLabel = xAxis.append("text")
-            .attr("x", dimensions.boundedWidth / 2 - 30)
-            .attr("y", dimensions.margin.bottom)
+            .attr("x", dimensions.boundedWidth / 2 -15)
+            .attr("y", dimensions.margin.bottom -10)
             .style("font-family", "Arial")
             .style("font-size", "10")
             .style("font-weight", "bold")

@@ -223,7 +223,7 @@
             width: width,
             height: height,
             margin: {
-                top: 20,
+                top: 10,
                 right: 50,
                 bottom: 30,
                 left: 50,

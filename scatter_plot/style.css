@@ -19,9 +19,14 @@ h5 {
 
 form{
   float: right;
-  padding-right: 40px;
-  padding-top: 20px;
-  font-size: 12px;
+  padding-right: 30px;
+  padding-top: 10px;
+  font-size: 10px;
+}
+input{
+  width:10px;
+  height:10px;
+  margin-top:10px;  
 }
 
 
@@ -95,12 +100,12 @@ div.DTS div.dataTables_scrollBody {
 }
 .axisLine path{
     stroke: black;
+    stroke-width: 0.5;
   }
-
-  #axis-x line{
-    stroke: black;
+.axisLine line{
+    stroke:black;
+    stroke-width: 0.2;
   }
-
 div.tooltip {
     /* position:absolute; */
     display: flex;
@@ -130,6 +135,7 @@ div.tooltip {
 }
 
 .grid line {
+  stroke-width: 0;
   stroke: lightgrey;
   stroke-opacity: 0.7;
 }
