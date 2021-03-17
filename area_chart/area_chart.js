@@ -553,7 +553,7 @@
             .style("font-weight", "bold")
             .text("Avg CTR:")
             .attr("fill", "white")
-            .style("font-size", "12px")
+            .style("font-size", "10px")
             .attr("font-family", "Arial")
 
         // var roundNo_2 = d3.format(10 + "%");
@@ -568,7 +568,7 @@
             .text(d => average_y2(d) * 10 + "%")
             .attr("y", d => y2Scale(average_y2(d)) + 15)
             .attr("x", 10)
-            .style("font-size", "12px")
+            .style("font-size", "10px")
             .attr("font-family", "Arial")
             .attr("fill", "white")
 
