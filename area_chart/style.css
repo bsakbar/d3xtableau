@@ -183,7 +183,7 @@ div.tooltip {
   }
 #wrapper{
   display: block;
-  padding-top: 10px;
+  /* padding-top: 10px; */
   margin-left:10px;
 }
 

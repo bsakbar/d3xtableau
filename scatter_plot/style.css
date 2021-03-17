@@ -93,6 +93,13 @@ div.DTS div.dataTables_scrollBody {
     font-weight: bold;
     color: #1b2326!important;
 }
+.axisLine path{
+    stroke: black;
+  }
+
+  #axis-x line{
+    stroke: black;
+  }
 
 div.tooltip {
     /* position:absolute; */

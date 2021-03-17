@@ -346,9 +346,8 @@
 
             const yAxis = bounds.append("g")
                 .attr('id', "axis-y")
-                // .call(yAxisGenerator)
                 .attr("font-family", "Arial")
-                .attr("font-size", "10")
+                .attr("font-size", "8")
                 .attr("text-align","left")
 
             const xAxisGenerator = d3.axisBottom()
@@ -364,7 +363,7 @@
             dimensions.boundedHeight
           }px)`)
                 .attr("font-family", "Arial")
-                .attr("font-size", "10")
+                .attr("font-size", "8")
 
 
             var gx = bounds.append("g")
@@ -379,7 +378,7 @@
             .call(yAxisGenerator)
             .attr("class", "grid")
             .attr("font-family", "Arial")
-            .attr("font-size", "10");
+            .attr("font-size", "8");
 
             // bounds.append("g")
             //     .attr("class", "grid")
@@ -435,12 +434,12 @@
           gx
           .call(xAxisGenerator.scale(new_xScale))
           .attr("font-family", "Arial")
-          .attr("font-size", "10");
+          .attr("font-size", "8");
 
           gy
           .call(yAxisGenerator.scale(new_yScale))
           .attr("font-family", "Arial")
-          .attr("font-size", "10");
+          .attr("font-size", "8");
 
 
           dots
