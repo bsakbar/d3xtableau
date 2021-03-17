@@ -24,11 +24,11 @@ form{
 
 }
 
-#radio_partner{
-  font-size: 10px;
+.radio_partner{
+  font-size: 10px !important;
 }
-#radio_campaign{
-  font-size: 10px;
+.radio_campaign{
+  font-size: 10px !important;
 }
 
 div.DTS div.dataTables_scrollBody {
@@ -37,13 +37,13 @@ div.DTS div.dataTables_scrollBody {
 
 .sheet_name {
     background-color: #1B2326;
-    font-size: 24px;
+    font-size: 22px;
     font-family: "League Gothic";
     /* text-transform: uppercase; */
     color:white;
     padding-left: 5px;
     margin-top: -3px;
-    height: 32px;
+    height: 30px;
     display: flex;
 }
 
@@ -61,7 +61,7 @@ div.DTS div.dataTables_scrollBody {
   letter-spacing: -0.5px;
   color: white;
   font-family: "Arial";
-  font-size: 12px;
+  font-size: 10px;
   margin-left:5px;
   /* margin-top: 10px; */
 }
