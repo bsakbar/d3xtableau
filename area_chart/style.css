@@ -51,6 +51,7 @@ div.DTS div.dataTables_scrollBody {
   color: white;
   font-family: "Arial";
   font-size: 12px;
+  margin-top:-2px;
 }
 .legend_name{
   width:max-content;
@@ -89,7 +90,7 @@ div.DTS div.dataTables_scrollBody {
 
 /* Create a custom checkbox */
 .checkmark {
-  margin-top: 4px;
+  margin-top: 2px;
   margin-left:85px;
   cursor: pointer;
   position: absolute;
