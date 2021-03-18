@@ -660,7 +660,7 @@
             .attr("class","axisLine")
             .call(yAxisGenerator)
             .attr("font-family", "Arial")
-            .attr("font-size", "10")
+            .attr("font-size", "8")
             .attr("text-align", "left")
 
 
@@ -677,7 +677,7 @@
               dimensions.boundedWidth
             }px)`)
             .attr("font-family", "Arial")
-            .attr("font-size", "10")
+            .attr("font-size", "8")
             .attr("text-align", "left")
 
 
@@ -695,7 +695,7 @@
         dimensions.boundedHeight
       }px)`)
             .attr("font-family", "Arial")
-            .attr("font-size", "10")
+            .attr("font-size", "8")
 
         const xAxisLabel = xAxis.append("text")
             .attr("x", dimensions.boundedWidth / 2)
