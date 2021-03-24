@@ -35,11 +35,15 @@
             let dataJson;
             worksheetData.data.map(d => {
                 dataJson = {};
-                dataJson['impressions'] = !isNaN(d[10].value) ? d[10].value : 0;
+                dataJson['impressions'] = !isNaN(d[11].value) ? d[11].value : 0;
+                dataJson['measured_impressions'] = !isNaN(d[12].value) ? d[12].value : 0;
+                dataJson['video_plays'] = !isNaN(d[13].value) ? d[13].value : 0;
+                dataJson['view_impressions'] = !isNaN(d[14].value) ? d[14].value : 0;
                 dataJson['ctr'] = !isNaN(d[3].value) ? d[3].value : 0;
                 dataJson['partner'] = d[0].value;
-                dataJson['clicks'] = !isNaN(d[6].value) ? d[6].value : 0;
-                dataJson['eng_rate'] = !isNaN(d[5].value) ? d[5].value : 0;
+                dataJson['vcr'] = !isNaN(d[4].value) ? d[4].value : 0;
+                dataJson['eng_rate'] = !isNaN(d[6].value) ? d[6].value : 0;
+                dataJson['clicks'] = !isNaN(d[7].value) ? d[7].value : 0;
                 dataJson['date'] = d[2].value;
 
                 if (dataJson['partner'] == ['facebook'] ||
@@ -358,7 +362,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 1)
-            div.html("Impressions: " + d.impressions + "<br/>" + "Engmagement Rate: " + (d.eng_rate*10).toFixed(1) + "%" + "<br/>" + "Clicks: " + d.clicks)
+            div.html("Impressions: " + d.impressions + "<br/>" + "Engagement Rate: " + (d.eng_rate*10).toFixed(1) + "%" + "<br/>" + "Clicks: " + d.clicks)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -568,7 +572,7 @@
             .attr("y", d => y2Scale(average_y2(d)) - 5)
             .attr("x", 10)
             .style("font-weight", "bold")
-            .text("Avg CTR:")
+            .text("Avg Engagement Rate:")
             .attr("fill", "white")
             .style("font-size", "10px")
             .attr("font-family", "Arial")
@@ -613,7 +617,7 @@
             // Update axis and area position
             xAxis.transition().duration(1000).call(
               d3.axisBottom(xScale)
-              .ticks(10)
+              .ticks(9)
               .tickFormat(formatDate2))
 
 
@@ -632,19 +636,19 @@
                 .transition()
                 .duration(1000)
                 .attr("d", path3)
-            // area
-            //     .select('.ctrLine')
-            //     .transition()
-            //     .duration(1000)
-            //     .attr("d", line1(arr))
-            //
-            //
+            area
+                .select('.ctrLine')
+                .transition()
+                .duration(1000)
+                .attr("d", line1(arr))
+
+
         }
 
         bounds.on("dblclick", function() {
             xScale.domain(d3.extent(arr, xAccessor))
             xAxis.transition().call(d3.axisBottom(xScale)
-            .ticks(10)
+            .ticks(9)
             .tickFormat(formatDate))
             area
                 .select('.area1')
@@ -658,15 +662,15 @@
                 .select('.area3')
                 .transition()
                 .attr("d", path3)
-            // area
-            //     .select('.ctrLine')
-            //     .transition()
-            //     .attr("d", line1(arr))
+            area
+                .select('.ctrLine')
+                .transition()
+                .attr("d", line1(arr))
 
 
         });
 
-        const remove_zero = d => (d / 1e4) + "K";
+        const remove_zero = d => (d / 1e6) + "M";
 
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
@@ -701,7 +705,7 @@
 
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
-            .ticks(10)
+            .ticks(9)
             .tickFormat(formatDate);
 
 
@@ -740,7 +744,7 @@
             .style("font-family", "Arial")
             .style("font-size", "10")
             .style("font-weight", "bold")
-            .html("CTR")
+            .html("Engagement Rate")
             .style("transform", "rotate(90deg)")
             .style("text-anchor", "middle")
             .attr("fill", "white")
