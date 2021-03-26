@@ -44,6 +44,17 @@ div.DTS div.dataTables_scrollBody {
   display: flex;
   margin-top:10px;
 }
+
+.legend_square{
+  display: flex;
+  color: white;
+  background-color: #5EC7EB;
+  height: 10px;
+  width:10px;
+  margin-left: 10px;
+  margin-top: 2px;
+}
+
 .legend_header{
   width: max-content;
   display: flex;
@@ -62,14 +73,13 @@ div.DTS div.dataTables_scrollBody {
   font-weight: bold;
   font-family: "Arial";
   font-size: 10px;
-  margin-left:0px;
+  margin-left:25px;
 
 }
 .container,
 .container2,
-.container3,
-.container4{
-  margin-left:10px;
+.container3{
+  margin-left:30px;
   display: flex;
   position: absolute;
   -webkit-user-select: none;
@@ -81,8 +91,7 @@ div.DTS div.dataTables_scrollBody {
 /* Hide the browser's default checkbox */
 .container input,
 .container2 input,
-.container3 input,
-.container4 input{
+.container3 input {
   position: absolute;
   opacity: 0;
   cursor: pointer;
@@ -93,7 +102,7 @@ div.DTS div.dataTables_scrollBody {
 /* Create a custom checkbox */
 .checkmark {
   margin-top: 2px;
-  margin-left:0px;
+  margin-left:85px;
   cursor: pointer;
   position: absolute;
   top: 0;
@@ -113,10 +122,6 @@ div.DTS div.dataTables_scrollBody {
 .container3 input:checked ~ .checkmark {
   background-color: #FF8500;
 }
-.container4 input:checked ~ .checkmark {
-  background-color: #DAF7A6;
-}
-
 
 /* Create the checkmark/indicator (hidden when not checked) */
 .checkmark:after {
@@ -129,16 +134,14 @@ div.DTS div.dataTables_scrollBody {
 /* Show the checkmark when checked */
 .container input:checked ~ .checkmark:after,
 .container2 input:checked ~ .checkmark:after,
-.container3 input:checked ~ .checkmark:after,
-.container4 input:checked ~ .checkmark:after{
+.container3 input:checked ~ .checkmark:after {
   display: block;
 }
 
 /* Style the checkmark/indicator */
 .container .checkmark:after,
 .container2 .checkmark:after,
-.container3 .checkmark:after,
-.container4 .checkmark:after {
+.container3 .checkmark:after {
   left: 5px;
   top: -2px;
   width: 5px;

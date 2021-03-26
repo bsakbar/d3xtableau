@@ -35,16 +35,18 @@
             let dataJson;
             worksheetData.data.map(d => {
                 dataJson = {};
-                dataJson['impressions'] = !isNaN(d[11].value) ? d[11].value : 0;
-                dataJson['measured_impressions'] = !isNaN(d[12].value) ? d[12].value : 0;
-                dataJson['video_plays'] = !isNaN(d[13].value) ? d[13].value : 0;
-                dataJson['view_impressions'] = !isNaN(d[14].value) ? d[14].value : 0;
-                dataJson['ctr'] = !isNaN(d[3].value) ? d[3].value : 0;
+                dataJson['impressions'] = !isNaN(d[12].value) ? d[12].value : 0;
+                dataJson['measured_impressions'] = !isNaN(d[13].value) ? d[13].value : 0;
+                dataJson['video_plays'] = !isNaN(d[15].value) ? d[15].value : 0;
+                dataJson['view_impressions'] = !isNaN(d[16].value) ? d[16].value : 0;
+                dataJson['ctr'] = !isNaN(d[4].value) ? d[4].value : 0;
                 dataJson['partner'] = d[0].value;
-                dataJson['vcr'] = !isNaN(d[4].value) ? d[4].value : 0;
-                dataJson['eng_rate'] = !isNaN(d[6].value) ? d[6].value : 0;    
-                dataJson['clicks'] = !isNaN(d[7].value) ? d[7].value : 0;
+                dataJson['vcr'] = !isNaN(d[5].value) ? d[5].value : 0;
+                dataJson['eng_rate'] = !isNaN(d[7].value) ? d[7].value : 0;
+                dataJson['eng_rate_2'] = !isNaN(d[14].value) ? d[14].value : 0;
+                dataJson['clicks'] = !isNaN(d[8].value) ? d[8].value : 0;
                 dataJson['date'] = d[2].value;
+
 
                 if (dataJson['partner'] == ['Google AdWords'] ||
                     dataJson['partner'] == ['Bing Ads'] ||
