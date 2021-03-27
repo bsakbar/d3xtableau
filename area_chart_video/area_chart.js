@@ -41,58 +41,37 @@
 
             worksheetData.data.map(d => {
                     dataJson = {};
-                    for (let i; i < d.length; d++){
-                      dataJson[cols[i].replace(' ','_')] = !isNaN(d[i].value) ? d[i].value : 0;
+                    for (let i=0; i < cols.length; i++){
+                      if (cols[i].includes("AGG(4. VCR)")){
+                        dataJson[cols[i].replace(' ','_')] = !isNaN(d[i].value) ? d[i].value : 0;
+                      } else {
+                      dataJson[cols[i].replace(' ','_')] = d[i].value;
+                      }
                     }
-                    // dataJson[cols[12].replace(' ','_')] = !isNaN(d[12].value) ? d[12].value : 0;
-                    // dataJson['impressions'] = !isNaN(d[12].value) ? d[12].value : 0;
-                    // dataJson['measured_impressions'] = !isNaN(d[13].value) ? d[13].value : 0;
-                    // dataJson['video_plays'] = !isNaN(d[15].value) ? d[15].value : 0;
-                    // dataJson['view_impressions'] = !isNaN(d[16].value) ? d[16].value : 0;
-                    // // dataJson['ctr'] = !isNaN(d[4].value) ? d[4].value : 0;
-                    // dataJson['ctr'] = d[4].fieldName
-                    // dataJson['partner'] = d[0].value;
-                    // dataJson['vcr'] = !isNaN(d[5].value) ? d[5].value : 0;
-                    // dataJson['eng_rate'] = !isNaN(d[7].value) ? d[7].value : 0;
-                    // dataJson['eng_rate_2'] = !isNaN(d[14].value) ? d[14].value : 0;
-                    // dataJson['clicks'] = !isNaN(d[8].value) ? d[8].value : 0;
-                    // dataJson['date'] = d[2].value;
-                    // dataJson['video_type'] = d[3].value;
 
-                    // console.log(dataJson)
+                      if (dataJson['Video_Type'] == 'non-skippable'){
+                          newArr.push(dataJson);
 
-                if (dataJson['video_type'] == ['Non-Skippable']){
-                    newArr.push(dataJson);
-                    console.log(dataJson)
-                  }
+                      }
 
             });
 
-            // var match_col_name = {}
-            // for (let i= 0; cols.length; i++){
-            //   if (cols[i].includes('impressions') {
-            //     match_col_name['impressions'] = i
-            //   } else if (){
-            //
-            //   }
-            // }
+
 
             let sums = {};
             let i;
             for (i = 0; i < newArr.length; i++) {
 
-                // var impressions = newArr[i][cols[match_col_name['impressions']]]
                 var impressions = newArr[i]["SUM(Impressions)"]
                 var clicks = newArr[i]["SUM(Clicks)"]
-                var ctr = newArr[i]["AGG(3. CTR)"]
-                var date = newArr[i]["Week Commencing"]
+                var ctr = newArr[i]["AGG(3._CTR)"]
+                var date = newArr[i]["Week_Commencing"]
                 var partner = newArr[i]["Partner"]
-                var video_type = newArr[i]["Video Type"]
-                var vcr = newArr[i]["AGG(4. VCR)"]
-                var video_plays = newArr[i]["SUM(Video Plays)"]
+                var video_type = newArr[i]["Video_Type"]
+                var vcr = newArr[i]["AGG(4._VCR)"]
+                var video_plays = newArr[i]["SUM(Video_Plays)"]
                 var partner = newArr[i]["Partner"]
-                var measured_impressions = newArr[i]["SUM(Measured Impressions)"]
-
+                var measured_impressions = newArr[i]["SUM(Measured_Impressions)"]
 
                 var video_date = video_type + '_' + date
 
@@ -106,8 +85,8 @@
                     sums[video_date] = {
                         "video_plays": video_plays,
                         "vcr": vcr,
-                        "video_type": newArr[i].video_type,
-                        "date": newArr[i].date
+                        "video_type": video_type,
+                        "date": date
                     }
                 }
             }
@@ -116,6 +95,8 @@
                 sumsArr.push(value)
 
             sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
+            console.log(sumsArr)
+
 
             drawDotChart(sumsArr);
 
@@ -169,27 +150,14 @@
     function drawDotChart(arr) {
         $('#wrapper').empty();
         const dateParser = d3.timeParse("%Y-%m-%d")
-        const formatDate = d3.timeFormat("%b %-d, %Y")
+        const formatDate = d3.timeFormat("%b %-d, %y")
         // const formatDate = d3.timeFormat("%b %d")
         const formatDate2 = d3.timeFormat("%b %d")
         const xAccessor = d => dateParser(d.date)
         const yAccessor = d => d.video_plays
         const y2Accessor = d => d.vcr
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        // const average_y2 = d =>d3.mean(arr, y2Accessor).toFixed(2);
-
-        // var arr_google = []
-        // var arr_bing = []
-        // var arr_yahoo = []
-        // for (var i = 0; i < arr.length; i++) {
-        //     if (arr[i].partner == 'Google AdWords') {
-        //         arr_google.push(arr[i])
-        //     } else if (arr[i].partner == 'Bing Ads') {
-        //         arr_bing.push(arr[i])
-        //     } else if (arr[i].partner == 'Yahoo Gemini') {
-        //         arr_yahoo.push(arr[i])
-        //     }
-        // }
+        const average_y2 = d =>d3.mean(arr, y2Accessor).toFixed(2);
 
 
 
@@ -328,24 +296,24 @@
         // }
 
 
-        function mouseOn(d) {
-            div.transition()
-                .duration(200)
-                .style("opacity", 0.95)
-            d3.select(this)
-                .style("opacity", 1)
-            div.html("Impressions: " + d.impressions + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%" + "<br/>" + "Clicks: ")
-                .style("left", (d3.event.pageX) + "px")
-                .style("top", (d3.event.pageY - 28) + "px");
-        };
-
-        function mouseOut(d) {
-            div.transition()
-                .duration(200)
-                .style("opacity", 0);
-            d3.select(this)
-                .style("opacity", 0.6)
-        };
+        // function mouseOn(d) {
+        //     div.transition()
+        //         .duration(200)
+        //         .style("opacity", 0.95)
+        //     d3.select(this)
+        //         .style("opacity", 1)
+        //     div.html("Impressions: " + d.impressions + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%" + "<br/>" + "Clicks: ")
+        //         .style("left", (d3.event.pageX) + "px")
+        //         .style("top", (d3.event.pageY - 28) + "px");
+        // };
+        //
+        // function mouseOut(d) {
+        //     div.transition()
+        //         .duration(200)
+        //         .style("opacity", 0);
+        //     d3.select(this)
+        //         .style("opacity", 0.6)
+        // };
 
         function mouseOnLine(d) {
             div.transition()
@@ -353,7 +321,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.3)
-            div.html("Partner:" + "<br/>" + "Impressions: " )
+            div.html("Video Views: " + d.video_plays + "<br/>" + "VCR: " + d.vcr.toFixed(2) +"%" )
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -451,9 +419,9 @@
             .attr("stroke", "white")
             .attr("d", line1(arr))
 
-        area.selectAll("circle")
-            .on("mouseover", mouseOn)
-            .on("mouseout", mouseOut);
+        // area.selectAll("circle")
+        //     .on("mouseover", mouseOn)
+        //     .on("mouseout", mouseOut);
 
         // area.selectAll("path")
         //     .on("mouseover", highlight)
@@ -475,40 +443,40 @@
             };
 
 
-        // const avgLine_y = bounds.append("line")
-        //     .attr("y1", d => y2Scale(average_y2(d)))
-        //     .attr("y2", d => y2Scale(average_y2(d)))
-        //     .attr("x1", 0)
-        //     .attr("x2", dimensions.boundedWidth)
-        //     .attr("stroke", "#D93251")
-        //     .attr("stroke-width", "2px")
-        //     .attr("weight", 3)
-        //     .attr("stroke-dasharray", "5px 5px")
+        const avgLine_y = bounds.append("line")
+            .attr("y1", d => y2Scale(average_y2(d)))
+            .attr("y2", d => y2Scale(average_y2(d)))
+            .attr("x1", 0)
+            .attr("x2", dimensions.boundedWidth)
+            .attr("stroke", "#D93251")
+            .attr("stroke-width", "2px")
+            .attr("weight", 3)
+            .attr("stroke-dasharray", "5px 5px")
 
-        // const avgLabel_y = bounds.append("text")
-        //     .attr("y", d => y2Scale(average_y2(d)) - 5)
-        //     .attr("x", 10)
-        //     .style("font-weight", "bold")
-        //     .text("Avg CTR:")
-        //     .attr("fill", "white")
-        //     .style("font-size", "10px")
-        //     .attr("font-family", "Arial")
+        const avgLabel_y = bounds.append("text")
+            .attr("y", d => y2Scale(average_y2(d)) - 5)
+            .attr("x", 10)
+            .style("font-weight", "bold")
+            .text("Avg VCR:")
+            .attr("fill", "white")
+            .style("font-size", "10px")
+            .attr("font-family", "Arial")
 
-        // var roundNo_2 = d3.format(10 + "%");
+        var roundNo_2 = d3.format(10 + "%");
 
-        // const avgLabel_y_2 = bounds
-        //     .append("g")
-        // avgLabel_y_2
-        //     .selectAll("text")
-        //     .data(arr)
-        //     .enter()
-        //     .append("text")
-        //     .text(d => average_y2(d) * 10 + "%")
-        //     .attr("y", d => y2Scale(average_y2(d)) + 15)
-        //     .attr("x", 10)
-        //     .style("font-size", "10px")
-        //     .attr("font-family", "Arial")
-        //     .attr("fill", "white")
+        const avgLabel_y_2 = bounds
+            .append("g")
+        avgLabel_y_2
+            .selectAll("text")
+            .data(arr)
+            .enter()
+            .append("text")
+            .text(d => average_y2(d) * 10 + "%")
+            .attr("y", d => y2Scale(average_y2(d)) + 15)
+            .attr("x", 10)
+            .style("font-size", "10px")
+            .attr("font-family", "Arial")
+            .attr("fill", "white")
 
 
         var idleTimeout
@@ -544,13 +512,13 @@
                 .duration(1000)
                 .attr("d", path1)
 
-            // area
-            //     .select('.ctrLine')
-            //     .transition()
-            //     .duration(1000)
-            //     .attr("d", line1(arr))
-            //
-            //
+            area
+                .select('.ctrLine')
+                .transition()
+                .duration(1000)
+                .attr("d", line1(arr))
+
+
         }
 
         bounds.on("dblclick", function() {
@@ -563,10 +531,10 @@
                 .transition()
                 .attr("d", path1)
 
-            // area
-            //     .select('.ctrLine')
-            //     .transition()
-            //     .attr("d", line1(arr))
+            area
+                .select('.ctrLine')
+                .transition()
+                .attr("d", line1(arr))
 
 
         });
