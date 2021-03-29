@@ -27,59 +27,71 @@
          for (let i=0; i < worksheets.length; i++){
            console.log(worksheets[i].name)
          }
-        worksheet.getSummaryDataAsync().then(function(sumdata) {
-            const worksheetData = sumdata;
-            console.log(worksheetData)
+         worksheet.getSummaryDataAsync().then(function(sumdata) {
+             const worksheetData = sumdata;
+             console.log(worksheetData)
 
-            let newArr = [];
-            let dataJson;
-            worksheetData.data.map(d => {
-                dataJson = {};
-                // dataJson['impressions'] = d[9].value; //1st column
-                dataJson['impressions'] = !isNaN(d[9].value) ? d[9].value : 0;
-                // dataJson['ctr'] = d[3].value; //2nd column
-                dataJson['ctr'] = !isNaN(d[3].value) ? d[3].value : 0;
-                dataJson['partner'] = d[0].value; //3rd column
-                // dataJson['clicks'] = d[5].value; //4th column
-                dataJson['clicks'] = !isNaN(d[5].value) ? d[5].value : 0;
-                dataJson['date'] = d[2].value;
+             let newArr = [];
+             var dataJson;
+             var cols = [];
+             worksheetData.columns.map(d => {
+               cols.push(d.fieldName);
+             })
+             console.log(cols)
 
-                if (dataJson['partner'] == ['Google AdWords'] ||
-                    dataJson['partner'] == ['Bing Ads'] ||
-                    dataJson['partner'] == ['Yahoo Gemini']) {
-                    newArr.push(dataJson);
-                }
-                // newArr.push(dataJson);
+             worksheetData.data.map(d => {
+                     dataJson = {};
+                     for (let i=0; i < cols.length; i++){
+                       if (cols[i].includes("AGG(4. VCR)")){
+                         dataJson[cols[i].replace(' ','_')] = !isNaN(d[i].value) ? d[i].value : 0;
+                       } else {
+                       dataJson[cols[i].replace(' ','_')] = d[i].value;
+                       }
+                     }
+                
+                       if (dataJson['Client_'] == ['AMAG']){
+                           newArr.push(dataJson);
 
-            });
+                       }
 
 
 
-            let sums = {};
-            let i;
-            for (i = 0; i < newArr.length; i++) {
+             });
 
-                var impressions = newArr[i].impressions
-                var clicks = newArr[i].clicks
-                var ctr = newArr[i].ctr
-                var date = newArr[i].date
-                var partner = newArr[i].partner
 
-                var partner_date = partner + '_' + date
 
-                if (partner_date in sums) {
-                    sums[partner_date]['impressions'] += impressions
-                    sums[partner_date]['ctr'] += ctr
-                    sums[partner_date]['clicks'] += clicks
-                    // sums[newArr[i].date]['partner'] += partner
+             let sums = {};
+             let i;
+             for (i = 0; i < newArr.length; i++) {
+
+                 var impressions = newArr[i]["SUM(Impressions)"]
+                 var clicks = newArr[i]["SUM(Clicks)"]
+                 var ctr = newArr[i]["AGG(3._CTR)"]
+                 var date = newArr[i]["Week_Commencing"]
+                 var partner = newArr[i]["Partner"]
+                 var video_type = newArr[i]["Video_Type"]
+                 var vcr = newArr[i]["AGG(4._VCR)"]
+                 var video_plays = newArr[i]["SUM(Video_Plays)"]
+                 var measured_impressions = newArr[i]["SUM(Measured_Impressions)"]
+                 var client = newArr[i]["Client_"]
+
+
+                var client_date = client + '_' + date
+
+                if (client_date in sums) {
+                    sums[client_date]['impressions'] += impressions
+                    sums[client_date]['ctr'] += ctr
+                    sums[client_date]['clicks'] += clicks
+
+
 
                 } else {
-                    sums[partner_date] = {
+                    sums[client_date] = {
                         "impressions": impressions,
                         "ctr": ctr,
                         "clicks": clicks,
-                        "partner": newArr[i].partner,
-                        "date": newArr[i].date
+                        "client": client,
+                        "date": date
                     }
                 }
             }
@@ -88,9 +100,9 @@
                 sumsArr.push(value)
 
             sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
-
+            // console.log(sumsArr)
             drawDotChart(sumsArr);
-            // drawDotChart(newArr);
+
 
         });
 
@@ -149,66 +161,9 @@
         const y2Accessor = d => d.ctr
         const clicks = d => d.clicks
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        const partners = d => d.partner
+        const client = d => d.client
         const average_y2 = d =>d3.mean(arr, y2Accessor).toFixed(2);
 
-        var arr_google = []
-        var arr_bing = []
-        var arr_yahoo = []
-        for (var i = 0; i < arr.length; i++) {
-            if (arr[i].partner == 'Google AdWords') {
-                arr_google.push(arr[i])
-            } else if (arr[i].partner == 'Bing Ads') {
-                arr_bing.push(arr[i])
-            } else if (arr[i].partner == 'Yahoo Gemini') {
-                arr_yahoo.push(arr[i])
-            }
-        }
-
-        if (document.querySelector('input[name="check"]')) {
-          document.querySelectorAll('input[name="check"]').forEach((elem) => {
-            elem.addEventListener("change", function() {
-              var check_1 = document.getElementById("check_1");
-              var check_2 = document.getElementById("check_2");
-              var check_3 = document.getElementById("check_3");
-              var area1 = document.getElementById("area1");
-              var area2 = document.getElementById("area2");
-              var area3 = document.getElementById("area3");
-                  if (check_1.checked == false ){
-                    area1.style.opacity = "0";
-                    area1.style.transition = "opacity .7s linear";
-                    // area1.style.visibility = "hidden";
-                  }
-                  if (check_2.checked == false ){
-                    // area2.style.visibility = "hidden";
-                    area2.style.opacity = "0";
-                    area2.style.transition = "opacity .7s linear";
-
-                  }
-                  if (check_3.checked == false ){
-                    // area3.style.visibility = "hidden";
-                    area3.style.opacity = "0";
-                    area3.style.transition = "opacity .7s linear";
-
-                  }
-                  if (check_1.checked == true ){
-                    area1.style.opacity = ".9";
-                    area1.style.transition = "visibility 0s .7s, opacity .7s linear";
-                    // area1.style.visibility = "visible";
-                  }
-                  if (check_2.checked == true ){
-                    area2.style.opacity = ".9";
-                    area2.style.transition = "visibility 0s .7s, opacity .7s linear";
-                    // area2.style.visibility = "visible";
-                  }
-                  if (check_3.checked == true ){
-                    area3.style.opacity = ".9";
-                    area3.style.transition = "visibility 0s .7s, opacity .7s linear";
-                    // area3.style.visibility = "visible";
-                  }
-            });
-          });
-        }
 
 
         const width = d3.min([
@@ -247,33 +202,6 @@
          }px,${
            dimensions.margin.top
          }px)`)
-
-         var defs = bounds.append("defs");
-
-  			defs.append("radialGradient")
-  				.attr("id", "gradient1")
-  				.selectAll("stop")
-  				.data([
-  						{offset: "0%", color: "#5EC7EB"},
-              {offset: "50%", color: "#5EC7EB"},
-  						{offset: "100%", color: "#1b2326"}
-  					])
-          .style("mix-blend-mode", "multiply")
-  				.enter().append("stop")
-  				.attr("offset", function(d) { return d.offset; })
-  				.attr("stop-color", function(d) { return d.color; });
-
-          defs.append("radialGradient")
-            .attr("id", "gradient2")
-            .selectAll("stop")
-            .data([
-                {offset: "80%", color: "#4e79a7"},
-                {offset: "50%", color: "#4e79a7"},
-                {offset: "100%", color: "#1b2326"}
-              ])
-            .enter().append("stop")
-            .attr("offset", function(d) { return d.offset; })
-            .attr("stop-color", function(d) { return d.color; });
 
 
 
@@ -375,7 +303,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.3)
-            div.html("Partner:" + d.partner + "<br/>" + "Impressions: " + d.impressions)
+            div.html("Partner:" + d.client + "<br/>" + "Impressions: " + d.impressions)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -416,13 +344,12 @@
 
 
         area.append("path")
-            .datum(arr_google)
+            .datum(arr)
             .transition()
             .duration(300)
             .attr("opacity",0)
             .attr("id", "area1")
             .attr("class", "area1")
-            // .attr("fill", "url(#gradient1)")
             .transition()
             .duration(900)
             .attr("fill", "#5EC7EB")
@@ -436,101 +363,60 @@
             .call(brush);
 
 
-        const path2 = d3.area()
-            .x(d => xScale(xAccessor(d)))
-            .y0(yScale(0))
-            .y1(d => yScale(yAccessor(d)))
-            .curve(curve)
+        //
+        // area.selectAll("line")
+        //    .data(arr)
+        //    .enter()
+        //    .append("line")
+        //    .attr("stroke","#1b2326")
+        //    .style("opacity",0)
+        //    .attr("x1", d => xScale(xAccessor(d)))
+        //    .attr("y1", d => yScale(yAccessor(d)))
+        //    .attr("x2",d => xScale(xAccessor(d)))
+        //    .attr("y2",dimensions.boundedHeight);
+        //
+        // area.selectAll("line")
+        //     .on("mouseover", mouseOnLine)
+        //     .on("mouseout", mouseOutLine);
 
 
-        area.append("path")
-            .datum(arr_bing)
-            .transition()
-            .duration(600)
-            .attr("opacity",0)
-            .attr("id", "area2")
-            .attr("class", "area2")
-            // .attr("fill", "url(#gradient2)")
-            .transition()
-            .duration(800)
-            .attr("fill", "#4e79a7")
-            .attr("opacity", .9)
-            .attr("d", path2)
-
-        area.selectAll("line")
-           .data(arr)
-           .enter()
-           .append("line")
-           .attr("stroke","#1b2326")
-           .style("opacity",0)
-           .attr("x1", d => xScale(xAccessor(d)))
-           .attr("y1", d => yScale(yAccessor(d)))
-           .attr("x2",d => xScale(xAccessor(d)))
-           .attr("y2",dimensions.boundedHeight);
-
-        area.selectAll("line")
-            .on("mouseover", mouseOnLine)
-            .on("mouseout", mouseOutLine);
-
-
-
-
-        const path3 = d3.area()
-            .x(d => xScale(xAccessor(d)))
-            .y0(yScale(0))
-            .y1(d => yScale(yAccessor(d)))
-            .curve(curve)
-
-
-        area.append("path")
-            .datum(arr_yahoo)
-            .transition()
-            .duration(800)
-            .attr("opacity",0)
-            .attr("id", "area3")
-            .attr("class", "area3")
-            .transition()
-            .duration(800)
-            .attr("fill", '#FF8500')
-            .attr("opacity", 0.8)
-            .attr("d", path3)
 
 
 
 
         const curve2 = d3.curveLinear
 
-
-        const line1 = d3.line()
-            .x(d => xScale(xAccessor(d)))
-            .y(d => y2Scale(y2Accessor(d)))
-            .curve(curve2)
-
-
-        area.append("path")
-            .data(arr)
-            .attr("class", "ctrLine")
-            .attr("fill", 'none')
-            .attr("stroke-width","0.4px")
-            .attr("stroke", "white")
-            .attr("d", line1(arr))
-
-
-        area.selectAll("circle")
-           .data(arr)
-           .enter()
-           .append("circle")
-           .attr("class", "endPoints")
-           .attr("fill", "white")
-           .style("opacity", 0.6)
-           .attr("stroke", "none")
-           .attr("cx", d => xScale(xAccessor(d)))
-           .attr("cy", d => y2Scale(y2Accessor(d)))
-           .attr("r", d => b_sizze(clicks(d)))
-
-        area.selectAll("circle")
-            .on("mouseover", mouseOn)
-            .on("mouseout", mouseOut);
+        //
+        // const line1 = d3.line()
+        //     .x(d => xScale(xAccessor(d)))
+        //     .y(d => y2Scale(y2Accessor(d)))
+        //     .curve(curve2)
+        //
+        //
+        // area.append("path")
+        //     .data(arr)
+        //     .attr("class", "ctrLine")
+        //     .attr("fill", 'none')
+        //     .attr("stroke-width","0.4px")
+        //     .attr("stroke", "white")
+        //     .attr("d", line1(arr))
+        //
+        //
+        // area.selectAll("circle")
+        //    .data(arr)
+        //    .enter()
+        //    .append("circle")
+        //    .attr("class", "endPoints")
+        //    .attr("fill", "white")
+        //    .style("opacity", 0.6)
+        //    .attr("stroke", "none")
+        //    .attr("cx", d => xScale(xAccessor(d)))
+        //    .attr("cy", d => y2Scale(y2Accessor(d)))
+        //    .attr("r", d => b_sizze(clicks(d)))
+        //
+        // area.selectAll("circle")
+        //     .on("mouseover", mouseOn)
+        //     .on("mouseout", mouseOut);
 
         // area.selectAll("path")
         //     .on("mouseover", highlight)
@@ -620,16 +506,7 @@
                 .transition()
                 .duration(1000)
                 .attr("d", path1)
-            area
-                .select('.area2')
-                .transition()
-                .duration(1000)
-                .attr("d", path2)
-            area
-                .select('.area3')
-                .transition()
-                .duration(1000)
-                .attr("d", path3)
+
             // area
             //     .select('.ctrLine')
             //     .transition()
@@ -648,14 +525,7 @@
                 .select('.area1')
                 .transition()
                 .attr("d", path1)
-            area
-                .select('.area2')
-                .transition()
-                .attr("d", path2)
-            area
-                .select('.area3')
-                .transition()
-                .attr("d", path3)
+
             // area
             //     .select('.ctrLine')
             //     .transition()

@@ -66,7 +66,6 @@
                 var clicks = newArr[i]["SUM(Clicks)"]
                 var ctr = newArr[i]["AGG(3._CTR)"]
                 var date = newArr[i]["Week_Commencing"]
-                var partner = newArr[i]["Partner"]
                 var video_type = newArr[i]["Video_Type"]
                 var vcr = newArr[i]["AGG(4._VCR)"]
                 var video_plays = newArr[i]["SUM(Video_Plays)"]
