@@ -27,78 +27,38 @@
          for (let i=0; i < worksheets.length; i++){
            console.log(worksheets[i].name)
          }
-        worksheet.getSummaryDataAsync().then(function(sumdata) {
-            const worksheetData = sumdata;
-            console.log(worksheetData)
+         worksheet.getSummaryDataAsync().then(function(sumdata) {
+             const worksheetData = sumdata;
+             console.log(worksheetData)
 
-            let newArr = [];
-            let dataJson;
-            worksheetData.data.map(d => {
-                    dataJson = {};
-                    dataJson['impressions'] = !isNaN(d[12].value) ? d[12].value : 0;
-                    dataJson['measured_impressions'] = !isNaN(d[13].value) ? d[13].value : 0;
-                    dataJson['video_plays'] = !isNaN(d[15].value) ? d[15].value : 0;
-                    dataJson['view_impressions'] = !isNaN(d[16].value) ? d[16].value : 0;
-                    dataJson['ctr'] = !isNaN(d[4].value) ? d[4].value : 0;
-                    dataJson['partner'] = d[0].value;
-                    dataJson['vcr'] = !isNaN(d[5].value) ? d[5].value : 0;
-                    dataJson['eng_rate'] = !isNaN(d[7].value) ? d[7].value : 0;
-                    dataJson['eng_rate_2'] = !isNaN(d[14].value) ? d[14].value : 0;
-                    dataJson['clicks'] = !isNaN(d[8].value) ? d[8].value : 0;
-                    dataJson['date'] = d[2].value;
+             let newArr = [];
+             var dataJson;
+             var cols = [];
+             worksheetData.columns.map(d => {
+               cols.push(d.fieldName);
+             })
+             console.log(cols)
 
-                if (dataJson['partner'] == ['facebook'] ||
-                    dataJson['partner'] == ['instagram'] ||
-                    dataJson['partner'] == ['unknown'] ||
-                    dataJson['partner'] == ['Hearst Corp']) {
+             worksheetData.data.map(d => {
+                     dataJson = {};
+                     for (let i=0; i < cols.length; i++){
+                       if (cols[i].includes("AGG(4. VCR)")){
+                         dataJson[cols[i].replace(' ','_')] = !isNaN(d[i].value) ? d[i].value : 0;
+                       } else {
+                       dataJson[cols[i].replace(' ','_')] = d[i].value;
+                       }
+                     }
+
+                if (dataJson['Partner'] == ['facebook'] ||
+                    dataJson['Partner'] == ['instagram'] ||
+                    dataJson['Partner'] == ['unknown'] ||
+                    dataJson['Partner'] == ['Hearst_Corp']) {
                     newArr.push(dataJson);
                 }
-                // newArr.push(dataJson);
+
 
             });
 
-            // let sums = {};
-            // let i;
-            // for (i = 0; i < newArr.length; i++) {
-            //   var impressions = newArr[i]["SUM(Impressions)"]
-            //   var clicks = newArr[i]["SUM(Clicks)"]
-            //   var ctr = newArr[i]["AGG(3. CTR)"]
-            //   var date = newArr[i]["Week Commencing"]
-            //   var partner = newArr[i]["Partner"]
-            //   var video_type = newArr[i]["Video Type"]
-            //   var vcr = newArr[i]["AGG(4. VCR)"]
-            //   var video_plays = newArr[i]["SUM(Video Plays)"]
-            //   var partner = newArr[i]["Partner"]
-            //   var measured_impressions = newArr[i]["SUM(Measured Impressions)"]
-            //   var eng_rate = newArr[i]["AGG(Social Engagement Rate)"]
-            //
-            //   var partner_date = partner + '_' + date
-            //
-            //     if (partner_date in sums) {
-            //         sums[partner_date]['impressions'] += impressions
-            //         sums[partner_date]['ctr'] += ctr
-            //         sums[partner_date]['clicks'] += clicks
-            //         sums[partner_date]['eng_rate'] += eng_rate
-            //
-            //     } else {
-            //         sums[partner_date] = {
-            //             "impressions": impressions,
-            //             "ctr": ctr,
-            //             "clicks": clicks,
-            //             "eng_rate": eng_rate,
-            //             "partner": newArr[i].partner,
-            //             "date": newArr[i].date
-            //         }
-            //     }
-            // }
-            // var sumsArr = []
-            // for (const [key, value] of Object.entries(sums))
-            //     sumsArr.push(value)
-            //
-            // sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
-            //
-            // drawDotChart(sumsArr);
-            //
 
 
 
@@ -106,24 +66,25 @@
             let i;
             for (i = 0; i < newArr.length; i++) {
 
-                var impressions = newArr[i].impressions
-                var clicks = newArr[i].clicks
-                var ctr = newArr[i].ctr
-                var date = newArr[i].date
-                var eng_rate = newArr[i].eng_rate
-                var eng_rate_2 = newArr[i].eng_rate_2
-                var partner = newArr[i].partner
+              var impressions = newArr[i]["SUM(Impressions)"]
+              var clicks = newArr[i]["SUM(Clicks)"]
+              var ctr = newArr[i]["AGG(3._CTR)"]
+              var date = newArr[i]["Week_Commencing"]
+              var partner = newArr[i]["Partner"]
+              var video_type = newArr[i]["Video_Type"]
+              var vcr = newArr[i]["AGG(4._VCR)"]
+              var video_plays = newArr[i]["SUM(Video_Plays)"]
+              var measured_impressions = newArr[i]["SUM(Measured_Impressions)"]
+              var client = newArr[i]["Client_"]
+              var eng_rate = newArr[i]["AGG(Social_Engagement_Rate)"]
 
-                var partner_date = partner + '_' + date
+              var partner_date = partner + '_' + date
 
                 if (partner_date in sums) {
                     sums[partner_date]['impressions'] += impressions
                     sums[partner_date]['ctr'] += ctr
                     sums[partner_date]['clicks'] += clicks
                     sums[partner_date]['eng_rate'] += eng_rate
-                    sums[partner_date]['eng_rate_2'] += eng_rate_2
-
-                    // sums[newArr[i].date]['partner'] += partner
 
                 } else {
                     sums[partner_date] = {
@@ -131,7 +92,6 @@
                         "ctr": ctr,
                         "clicks": clicks,
                         "eng_rate": eng_rate,
-                        "eng_rate_2": eng_rate_2,
                         "partner": newArr[i].partner,
                         "date": newArr[i].date
                     }

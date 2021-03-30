@@ -27,30 +27,31 @@
          for (let i=0; i < worksheets.length; i++){
            console.log(worksheets[i].name)
          }
-        worksheet.getSummaryDataAsync().then(function(sumdata) {
-            const worksheetData = sumdata;
-            console.log(worksheetData)
+         worksheet.getSummaryDataAsync().then(function(sumdata) {
+             const worksheetData = sumdata;
+             console.log(worksheetData)
 
-            let newArr = [];
-            let dataJson;
-            worksheetData.data.map(d => {
-                dataJson = {};
-                dataJson['impressions'] = !isNaN(d[12].value) ? d[12].value : 0;
-                dataJson['measured_impressions'] = !isNaN(d[13].value) ? d[13].value : 0;
-                dataJson['video_plays'] = !isNaN(d[15].value) ? d[15].value : 0;
-                dataJson['view_impressions'] = !isNaN(d[16].value) ? d[16].value : 0;
-                dataJson['ctr'] = !isNaN(d[4].value) ? d[4].value : 0;
-                dataJson['partner'] = d[0].value;
-                dataJson['vcr'] = !isNaN(d[5].value) ? d[5].value : 0;
-                dataJson['eng_rate'] = !isNaN(d[7].value) ? d[7].value : 0;
-                dataJson['eng_rate_2'] = !isNaN(d[14].value) ? d[14].value : 0;
-                dataJson['clicks'] = !isNaN(d[8].value) ? d[8].value : 0;
-                dataJson['date'] = d[2].value;
+             let newArr = [];
+             var dataJson;
+             var cols = [];
+             worksheetData.columns.map(d => {
+               cols.push(d.fieldName);
+             })
+             console.log(cols)
 
+             worksheetData.data.map(d => {
+                     dataJson = {};
+                     for (let i=0; i < cols.length; i++){
+                       if (cols[i].includes("AGG(4. VCR)")){
+                         dataJson[cols[i].replace(' ','_')] = !isNaN(d[i].value) ? d[i].value : 0;
+                       } else {
+                       dataJson[cols[i].replace(' ','_')] = d[i].value;
+                       }
+                     }
 
-                if (dataJson['partner'] == ['Google AdWords'] ||
-                    dataJson['partner'] == ['Bing Ads'] ||
-                    dataJson['partner'] == ['Yahoo Gemini']) {
+                if (dataJson['Partner'] == ['Google AdWords'] ||
+                    dataJson['Partner'] == ['Bing Ads'] ||
+                    dataJson['Partner'] == ['Yahoo Gemini']) {
                     newArr.push(dataJson);
                 }
                 // newArr.push(dataJson);
@@ -63,13 +64,19 @@
             let i;
             for (i = 0; i < newArr.length; i++) {
 
-                var impressions = newArr[i].impressions
-                var clicks = newArr[i].clicks
-                var ctr = newArr[i].ctr
-                var date = newArr[i].date
-                var partner = newArr[i].partner
+              var impressions = newArr[i]["SUM(Impressions)"]
+              var clicks = newArr[i]["SUM(Clicks)"]
+              var ctr = newArr[i]["AGG(3._CTR)"]
+              var date = newArr[i]["Week_Commencing"]
+              var partner = newArr[i]["Partner"]
+              var video_type = newArr[i]["Video_Type"]
+              var vcr = newArr[i]["AGG(4._VCR)"]
+              var video_plays = newArr[i]["SUM(Video_Plays)"]
+              var measured_impressions = newArr[i]["SUM(Measured_Impressions)"]
+              var client = newArr[i]["Client_"]
+              var eng_rate = newArr[i]["AGG(Social_Engagement_Rate)"]
 
-                var partner_date = partner + '_' + date
+              var partner_date = partner + '_' + date
 
                 if (partner_date in sums) {
                     sums[partner_date]['impressions'] += impressions

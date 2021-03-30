@@ -48,7 +48,7 @@
                        dataJson[cols[i].replace(' ','_')] = d[i].value;
                        }
                      }
-                
+
                        if (dataJson['Client_'] == ['AMAG']){
                            newArr.push(dataJson);
 
