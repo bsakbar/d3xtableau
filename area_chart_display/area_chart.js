@@ -43,13 +43,15 @@
                      dataJson = {};
                      for (let i=0; i < cols.length; i++){
                        if (cols[i].includes("AGG(4. VCR)")){
-                         dataJson[cols[i].replace(' ','_')] = !isNaN(d[i].value) ? d[i].value : 0;
+                         dataJson[cols[i]] = !isNaN(d[i].value) ? d[i].value : 0;
                        } else {
-                       dataJson[cols[i].replace(' ','_')] = d[i].value;
+                       dataJson[cols[i]] = d[i].value;
                        }
                      }
 
-                       if (dataJson['Client_'] == ['AMAG']){
+
+
+                       if (dataJson['Client '] == ['AMAG']){
                            newArr.push(dataJson);
 
                        }
@@ -64,16 +66,12 @@
              let i;
              for (i = 0; i < newArr.length; i++) {
 
-                 var impressions = newArr[i]["SUM(Impressions)"]
-                 var clicks = newArr[i]["SUM(Clicks)"]
-                 var ctr = newArr[i]["AGG(3._CTR)"]
-                 var date = newArr[i]["Week_Commencing"]
                  var partner = newArr[i]["Partner"]
-                 var video_type = newArr[i]["Video_Type"]
-                 var vcr = newArr[i]["AGG(4._VCR)"]
-                 var video_plays = newArr[i]["SUM(Video_Plays)"]
-                 var measured_impressions = newArr[i]["SUM(Measured_Impressions)"]
-                 var client = newArr[i]["Client_"]
+                 var impressions = newArr[i]["SUM(Impressions)"]
+                 var ctr = newArr[i]["AGG(3. CTR)"]
+                 var date = newArr[i]["Week Commencing"]
+                 var video_type = newArr[i]["Video Type"]
+                 var client = newArr[i]["Client "]
 
 
                 var client_date = client + '_' + date
@@ -81,7 +79,6 @@
                 if (client_date in sums) {
                     sums[client_date]['impressions'] += impressions
                     sums[client_date]['ctr'] += ctr
-                    sums[client_date]['clicks'] += clicks
 
 
 
@@ -89,8 +86,8 @@
                     sums[client_date] = {
                         "impressions": impressions,
                         "ctr": ctr,
-                        "clicks": clicks,
                         "client": client,
+                        "partner": partner,
                         "date": date
                     }
                 }
@@ -100,7 +97,7 @@
                 sumsArr.push(value)
 
             sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
-            // console.log(sumsArr)
+            console.log(sumsArr)
             drawDotChart(sumsArr);
 
 
@@ -284,7 +281,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 1)
-            div.html("Impressions: " + d.impressions + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%" + "<br/>" + "Clicks: " + d.clicks)
+            div.html("Impressions: " + d.impressions + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%")
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -352,7 +349,7 @@
             .attr("class", "area1")
             .transition()
             .duration(900)
-            .attr("fill", "#5EC7EB")
+            .attr("fill", "#7e9096")
             .attr("opacity", .9)
             .attr("d", path1)
 
@@ -386,20 +383,20 @@
 
         const curve2 = d3.curveLinear
 
-        //
-        // const line1 = d3.line()
-        //     .x(d => xScale(xAccessor(d)))
-        //     .y(d => y2Scale(y2Accessor(d)))
-        //     .curve(curve2)
-        //
-        //
-        // area.append("path")
-        //     .data(arr)
-        //     .attr("class", "ctrLine")
-        //     .attr("fill", 'none')
-        //     .attr("stroke-width","0.4px")
-        //     .attr("stroke", "white")
-        //     .attr("d", line1(arr))
+
+        const line1 = d3.line()
+            .x(d => xScale(xAccessor(d)))
+            .y(d => y2Scale(y2Accessor(d)))
+            .curve(curve2)
+
+
+        area.append("path")
+            .data(arr)
+            .attr("class", "ctrLine")
+            .attr("fill", 'none')
+            .attr("stroke-width","1px")
+            .attr("stroke", "white")
+            .attr("d", line1(arr))
         //
         //
         // area.selectAll("circle")
@@ -507,13 +504,13 @@
                 .duration(1000)
                 .attr("d", path1)
 
-            // area
-            //     .select('.ctrLine')
-            //     .transition()
-            //     .duration(1000)
-            //     .attr("d", line1(arr))
-            //
-            //
+            area
+                .select('.ctrLine')
+                .transition()
+                .duration(1000)
+                .attr("d", line1(arr))
+
+
         }
 
         bounds.on("dblclick", function() {
@@ -526,10 +523,10 @@
                 .transition()
                 .attr("d", path1)
 
-            // area
-            //     .select('.ctrLine')
-            //     .transition()
-            //     .attr("d", line1(arr))
+            area
+                .select('.ctrLine')
+                .transition()
+                .attr("d", line1(arr))
 
 
         });
@@ -553,7 +550,7 @@
         const y2AxisGenerator = d3.axisRight()
             .scale(y2Scale)
             .ticks(5)
-            .tickFormat(d => (d * 10) + "%");
+            .tickFormat(d => d + "%");
 
         const y2Axis = bounds.append("g")
             .attr("class","axisLine")

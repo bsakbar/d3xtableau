@@ -43,13 +43,13 @@
                     dataJson = {};
                     for (let i=0; i < cols.length; i++){
                       if (cols[i].includes("AGG(4. VCR)")){
-                        dataJson[cols[i].replace(' ','_')] = !isNaN(d[i].value) ? d[i].value : 0;
+                        dataJson[cols[i]] = !isNaN(d[i].value) ? d[i].value : 0;
                       } else {
-                      dataJson[cols[i].replace(' ','_')] = d[i].value;
+                      dataJson[cols[i]] = d[i].value;
                       }
                     }
 
-                      if (dataJson['Video_Type'] == 'non-skippable'){
+                      if (dataJson['Video Type'] == 'non-skippable'){
                           newArr.push(dataJson);
 
                       }
@@ -64,13 +64,13 @@
 
                 var impressions = newArr[i]["SUM(Impressions)"]
                 var clicks = newArr[i]["SUM(Clicks)"]
-                var ctr = newArr[i]["AGG(3._CTR)"]
-                var date = newArr[i]["Week_Commencing"]
-                var video_type = newArr[i]["Video_Type"]
-                var vcr = newArr[i]["AGG(4._VCR)"]
-                var video_plays = newArr[i]["SUM(Video_Plays)"]
+                var ctr = newArr[i]["AGG(3. CTR)"]
+                var date = newArr[i]["Week Commencing"]
+                var video_type = newArr[i]["Video Type"]
+                var vcr = newArr[i]["AGG(4. VCR)"]
+                var video_plays = newArr[i]["SUM(Video Plays)"]
                 var partner = newArr[i]["Partner"]
-                var measured_impressions = newArr[i]["SUM(Measured_Impressions)"]
+                var measured_impressions = newArr[i]["SUM(Measured Impressions)"]
 
                 var video_date = video_type + '_' + date
 
@@ -414,7 +414,7 @@
             .data(arr)
             .attr("class", "ctrLine")
             .attr("fill", 'none')
-            .attr("stroke-width","0.4px")
+            .attr("stroke-width","1px")
             .attr("stroke", "white")
             .attr("d", line1(arr))
 

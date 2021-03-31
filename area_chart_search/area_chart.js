@@ -42,10 +42,10 @@
              worksheetData.data.map(d => {
                      dataJson = {};
                      for (let i=0; i < cols.length; i++){
-                       if (cols[i].includes("AGG(4. VCR)")){
-                         dataJson[cols[i].replace(' ','_')] = !isNaN(d[i].value) ? d[i].value : 0;
+                       if (cols[i].includes("SUM(Impressions)")){
+                         dataJson[cols[i]] = !isNaN(d[i].value) ? d[i].value : 0;
                        } else {
-                       dataJson[cols[i].replace(' ','_')] = d[i].value;
+                       dataJson[cols[i]] = d[i].value;
                        }
                      }
 
@@ -54,7 +54,6 @@
                     dataJson['Partner'] == ['Yahoo Gemini']) {
                     newArr.push(dataJson);
                 }
-                // newArr.push(dataJson);
 
             });
 
@@ -66,15 +65,15 @@
 
               var impressions = newArr[i]["SUM(Impressions)"]
               var clicks = newArr[i]["SUM(Clicks)"]
-              var ctr = newArr[i]["AGG(3._CTR)"]
-              var date = newArr[i]["Week_Commencing"]
+              var ctr = newArr[i]["AGG(3. CTR)"]
+              var date = newArr[i]["Week Commencing"]
               var partner = newArr[i]["Partner"]
-              var video_type = newArr[i]["Video_Type"]
-              var vcr = newArr[i]["AGG(4._VCR)"]
-              var video_plays = newArr[i]["SUM(Video_Plays)"]
-              var measured_impressions = newArr[i]["SUM(Measured_Impressions)"]
-              var client = newArr[i]["Client_"]
-              var eng_rate = newArr[i]["AGG(Social_Engagement_Rate)"]
+              var video_type = newArr[i]["Video Type"]
+              var vcr = newArr[i]["AGG(4. VCR)"]
+              var video_plays = newArr[i]["SUM(Video Plays)"]
+              var measured_impressions = newArr[i]["SUM(Measured Impressions)"]
+              var client = newArr[i]["Client "]
+              var eng_rate = newArr[i]["AGG(Social Engagement Rate)"]
 
               var partner_date = partner + '_' + date
 
@@ -89,8 +88,8 @@
                         "impressions": impressions,
                         "ctr": ctr,
                         "clicks": clicks,
-                        "partner": newArr[i].partner,
-                        "date": newArr[i].date
+                        "partner": partner,
+                        "date": date
                     }
                 }
             }
@@ -100,8 +99,10 @@
 
             sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
 
+            console.log(sumsArr);
+
             drawDotChart(sumsArr);
-            // drawDotChart(newArr);
+
 
         });
 
@@ -163,16 +164,16 @@
         const partners = d => d.partner
         const average_y2 = d =>d3.mean(arr, y2Accessor).toFixed(2);
 
-        var arr_google = []
-        var arr_bing = []
-        var arr_yahoo = []
+        var arr_1 = []
+        var arr_2 = []
+        var arr_3 = []
         for (var i = 0; i < arr.length; i++) {
             if (arr[i].partner == 'Google AdWords') {
-                arr_google.push(arr[i])
+                arr_1.push(arr[i])
             } else if (arr[i].partner == 'Bing Ads') {
-                arr_bing.push(arr[i])
+                arr_2.push(arr[i])
             } else if (arr[i].partner == 'Yahoo Gemini') {
-                arr_yahoo.push(arr[i])
+                arr_3.push(arr[i])
             }
         }
 
@@ -427,7 +428,7 @@
 
 
         area.append("path")
-            .datum(arr_google)
+            .datum(arr_1)
             .transition()
             .duration(300)
             .attr("opacity",0)
@@ -455,7 +456,7 @@
 
 
         area.append("path")
-            .datum(arr_bing)
+            .datum(arr_2)
             .transition()
             .duration(600)
             .attr("opacity",0)
@@ -494,7 +495,7 @@
 
 
         area.append("path")
-            .datum(arr_yahoo)
+            .datum(arr_3)
             .transition()
             .duration(800)
             .attr("opacity",0)
