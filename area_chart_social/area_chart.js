@@ -594,7 +594,7 @@
                 .select('.ctrLine')
                 .transition()
                 .duration(1000)
-                .attr("d", line1(arr_line))
+                .attr("d", line1(arr))
         }
 
         bounds.on("dblclick", function() {
@@ -621,7 +621,7 @@
             area
                 .select('.ctrLine')
                 .transition()
-                .attr("d", line1(arr_line))
+                .attr("d", line1(arr))
         });
 
         const remove_zero = d => (d / 1e6) + "M";
