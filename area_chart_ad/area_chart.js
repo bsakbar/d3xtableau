@@ -49,14 +49,7 @@
                        }
                      }
 
-
-                if (dataJson['Partner'] == ['facebook'] ||
-                    dataJson['Partner'] == ['instagram'] ||
-                    dataJson['Partner'] == ['unknown'] ||
-                    dataJson['Partner'] == ['Hearst Corp']) {
-                    newArr.push(dataJson);
-                }
-
+                     newArr.push(dataJson);
 
             });
 
@@ -76,6 +69,7 @@
               var vcr = newArr[i]["AGG(4. VCR)"]
               var video_plays = newArr[i]["SUM(Video Plays)"]
               var measured_impressions = newArr[i]["SUM(Measured Impressions)"]
+              var view_impressions = newArr[i]["SUM(Viewable Impressions)"]
               var client = newArr[i]["Client "]
               var eng_rate = newArr[i]["AGG(Social Engagement Rate)"]
 
@@ -83,15 +77,14 @@
               var partner_date = partner + '_' + date
 
                 if (partner_date in sums) {
-                    sums[partner_date]['impressions'] += impressions
-                    sums[partner_date]['ctr'] += ctr
-                    sums[partner_date]['clicks'] += clicks
-                    sums[partner_date]['eng_rate'] += eng_rate
+                    sums[partner_date]['measured_impressions'] += measured_impressions
+                    sums[partner_date]['view_impressions'] += view_impressions
+
 
                 } else {
                     sums[partner_date] = {
-                        "impressions": impressions,
-                        "ctr": ctr,
+                        "measured_impressions": measured_impressions,
+                        "view_impressions": view_impressions,
                         "clicks": clicks,
                         "eng_rate": eng_rate,
                         "partner": partner,
