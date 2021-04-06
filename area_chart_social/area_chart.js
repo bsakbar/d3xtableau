@@ -31,6 +31,8 @@
         worksheet.getSummaryDataAsync().then(function(sumdata) {
             const worksheetData = sumdata;
 
+            console.log(worksheetData)
+
             let newArr = [];
             var dataJson;
             var cols = [];
@@ -39,6 +41,7 @@
             worksheetData.columns.map(d => {
                 cols.push(d.fieldName);
             })
+            console.log(cols)
 
             worksheetData.data.map(d => {
                 dataJson = {};
@@ -108,7 +111,7 @@
             // sort array by date
             sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
 
-
+            console.log(sumsArr)
             // calling the function that draws the chart
             drawDotChart(sumsArr);
 
