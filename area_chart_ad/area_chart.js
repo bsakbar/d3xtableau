@@ -66,15 +66,16 @@
                  var view_imp = newArr[i]["SUM(Viewable Impressions)"]
                  var view_rate = newArr[i]["AGG(In-View Rate)"]
 
-                 var measured_date = measured_imp + '_' + date
+                 // var measured_date = measured_imp + '_' + date
 
 
-                if (measured_date in sums) {
-                    sums[measured_date]['view_imp'] += view_imp
-                    sums[measured_date]['view_rate'] += view_rate
+                if (date in sums) {
+                    sums[date]['view_imp'] += view_imp
+                    sums[date]['measured_imp'] += measured_imp
+                    sums[date]['view_rate'] += view_rate
 
                 } else {
-                    sums[measured_date] = {
+                    sums[date] = {
                       "measured_imp": measured_imp,
                       "view_imp": view_imp,
                       "date": date,
@@ -89,8 +90,10 @@
                 sumsArr.push(value)
 
             sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
-            console.log(sumsArr)
-            drawDotChart(sumsArr);
+
+            var trimmed_arr = sumsArr.slice(51)
+            console.log(trimmed_arr)
+            drawDotChart(trimmed_arr);
 
 
         });
@@ -166,9 +169,9 @@
             width: width,
             height: height,
             margin: {
-                top: 10,
+                top: 20,
                 right: 50,
-                bottom: 30,
+                bottom: 20,
                 left: 50,
             },
         }
@@ -190,6 +193,43 @@
          }px,${
            dimensions.margin.top
          }px)`)
+
+         var defs = bounds.append("defs");
+
+        // var gradient = defs.append("linearGradient")
+        //    .attr("id", "svgGradient")
+        //    .attr("x1", "0%")
+        //    .attr("x2", "100%")
+        //    .attr("y1", "0%")
+        //    .attr("y2", "100%");
+        //
+        // gradient.append("stop")
+        //    .attr('class', 'start')
+        //    .attr("offset", "0%")
+        //    .attr("stop-color", "red")
+        //    .attr("stop-opacity", 1);
+        //
+        // gradient.append("stop")
+        //    .attr('class', 'end')
+        //    .attr("offset", "100%")
+        //    .attr("stop-color", "red")
+        //    .attr("stop-opacity", 0);
+
+
+    bounds.append("linearGradient")
+        .attr("id", "svgGradient")
+        .attr("x1", "0%").attr("y1", "0%")
+        .attr("x2", "100%").attr("y2", "0%")
+    .selectAll("stop")
+        .data([
+            {offset: "0%", color: "lightgrey"},
+            {offset: "50%", color: "lightgrey"},
+            {offset: "100%", color: "red"}
+        ])
+    .enter().append("stop")
+        .attr("offset", function(d) { return d.offset; })
+        .attr("stop-color", function(d) { return d.color; });
+
 
 
 
@@ -217,7 +257,7 @@
             // .nice()
 
         const y3Scale = d3.scaleLinear()
-            .domain(d3.extent(arr, view_rate))
+            .domain([0, 10])
             .range([dimensions.boundedHeight, 0])
             // .nice()
 
@@ -232,8 +272,8 @@
         }
 
         function y2_gridlines() {
-            return d3.axisRight(y2Scale)
-                .ticks(0)
+            return d3.axisRight(y3Scale)
+                .ticks(3)
         }
 
         bounds.append("g")
@@ -253,7 +293,8 @@
 
         bounds.append("g")
             .attr("class", "grid_y2")
-            // .attr("stroke-dasharray", "4px 4px")
+            // .style("stroke", "url(#svgGradient)")
+            .attr("stroke-dasharray", "4px 4px")
             .call(y2_gridlines()
                 .tickSize(dimensions.boundedWidth)
                 .tickFormat("")
@@ -315,6 +356,29 @@
             .attr("class","areas")
             .attr("clip-path", "url(#clip)")
 
+            const curve2 = d3.curveBasis
+
+
+            const path2 = d3.area()
+                .x(d => xxScale(xAccessor(d)))
+                .y0(yScale(0))
+                .y1(d => y3Scale(view_rate(d)))
+                .curve(curve2)
+
+            area.append("path")
+                .datum(arr)
+                .transition()
+                .duration(300)
+                .attr("opacity",0)
+                .attr("id", "area2")
+                .attr("class", "area2")
+                .transition()
+                .duration(900)
+                .attr("fill", "#7e9096")
+                .attr("stroke","none")
+                .attr("opacity", .5)
+                .attr("d", path2)
+
         const path1 = d3.area()
             .x(d => xxScale(xAccessor(d)))
             .y0(yScale(0))
@@ -331,30 +395,25 @@
             .attr("class", "area1")
             .transition()
             .duration(900)
-            .attr("fill", "#7e9096")
-            .attr("opacity", .9)
+            .attr("fill", "#4e79a7")
+            .attr("opacity", 1)
             .attr("d", path1)
 
-            const curve2 = d3.curveLinear
 
-            const path2 = d3.area()
-                .x(d => xxScale(xAccessor(d)))
-                .y0(yScale(0))
-                .y1(d => y3Scale(view_rate(d)))
-                .curve(curve)
 
-            area.append("path")
-                .datum(arr)
-                .transition()
-                .duration(300)
-                .attr("opacity",0)
-                .attr("id", "area2")
-                .attr("class", "area2")
-                .transition()
-                .duration(900)
-                .attr("fill", "#eee")
-                .attr("opacity", .5)
-                .attr("d", path2)
+
+
+            // area.selectAll(".bar_2")
+            //   .data(arr)
+            //   .enter()
+            //   .append("rect")
+            //   .attr("class","bar_2")
+            //   .attr("fill", "#eee")
+            //   .attr("opacity","0.3")
+            //   .attr("x", d => xxScale(xAccessor(d)))
+            //   .attr("y", d => y3Scale(view_rate(d)))
+            //   .attr("height", d=> dimensions.boundedHeight - y3Scale(yAccessor(d)))
+            //   .attr("width", xScale.bandwidth());
 
             // area.append("path")
             //     .data(arr)
@@ -404,6 +463,7 @@
         .append("rect")
         .attr("class","bar")
         .attr("fill", "#5EC7EB")
+        .attr("opacity", 0.7)
         .attr("x", d => xxScale(xAccessor(d)))
         .attr("y", d => yScale(yAccessor(d)))
         .attr("height", d=> dimensions.boundedHeight - yScale(yAccessor(d)))
@@ -426,7 +486,7 @@
 
 
 
-        const remove_zero = d => (d / 1e4) + "K";
+        const remove_zero = d => (d / 1e3) + "K";
 
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
@@ -443,9 +503,9 @@
 
 
         const y2AxisGenerator = d3.axisRight()
-            .scale(y2Scale)
-            .ticks(0)
-            .tickFormat(remove_zero);
+            .scale(y3Scale)
+            .ticks(3)
+            .tickFormat(d => d * 10 + "%");
 
         const y2Axis = bounds.append("g")
             .attr("class","axisLine")
@@ -454,7 +514,8 @@
               dimensions.boundedWidth
             }px)`)
             .attr("font-family", "Arial")
-            .attr("opacity","0")
+            .attr("stroke-dasharray", "4px 4px")
+            .attr("opacity","0.5")
             .attr("font-size", "8")
             .attr("text-align", "left")
 
@@ -482,7 +543,7 @@
             .style("font-size", "10")
             .style("font-weight", "bold")
             .html("")
-            .attr("fill", "white")
+            .attr("fill", " #1b2326")
 
         const yAxisLabel = yAxis.append("text")
             .attr("x", -dimensions.boundedHeight / 2)
@@ -493,18 +554,19 @@
             .html("Measured Impressions")
             .style("transform", "rotate(-90deg)")
             .style("text-anchor", "middle")
-            .style("fill", "white")
+            .style("fill", " #1b2326")
 
-        // const y2AxisLabel = y2Axis.append("text")
-        //     .attr("x", dimensions.boundedHeight / 2)
-        //     .attr("y", -dimensions.margin.right + 10)
-        //     .style("font-family", "Arial")
-        //     .style("font-size", "10")
-        //     .style("font-weight", "bold")
-        //     .html("Viewable Impressions")
-        //     .style("transform", "rotate(90deg)")
-        //     .style("text-anchor", "middle")
-        //     .attr("fill", "white")
+        const y2AxisLabel = y2Axis.append("text")
+            .attr("x", dimensions.boundedHeight / 2)
+            .attr("y", -dimensions.margin.right + 10)
+            .style("font-family", "Arial")
+            .style("font-size", "10")
+            .style("font-weight", "bold")
+            .attr("opacity", 1)
+            .html("View Rate")
+            .style("transform", "rotate(90deg)")
+            .style("text-anchor", "middle")
+            .attr("fill", " #1b2326")
 
     }
 
