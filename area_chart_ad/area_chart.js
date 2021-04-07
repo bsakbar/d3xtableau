@@ -196,26 +196,6 @@
 
          var defs = bounds.append("defs");
 
-        // var gradient = defs.append("linearGradient")
-        //    .attr("id", "svgGradient")
-        //    .attr("x1", "0%")
-        //    .attr("x2", "100%")
-        //    .attr("y1", "0%")
-        //    .attr("y2", "100%");
-        //
-        // gradient.append("stop")
-        //    .attr('class', 'start')
-        //    .attr("offset", "0%")
-        //    .attr("stop-color", "red")
-        //    .attr("stop-opacity", 1);
-        //
-        // gradient.append("stop")
-        //    .attr('class', 'end')
-        //    .attr("offset", "100%")
-        //    .attr("stop-color", "red")
-        //    .attr("stop-opacity", 0);
-
-
     bounds.append("linearGradient")
         .attr("id", "svgGradient")
         .attr("x1", "0%").attr("y1", "0%")
@@ -230,12 +210,10 @@
         .attr("offset", function(d) { return d.offset; })
         .attr("stop-color", function(d) { return d.color; });
 
-
-
-
         const div = d3.select("body").append("div")
             .attr("class", "tooltip")
             .style("opacity", 0);
+
 
             const xxScale = d3.scaleTime()
                 .domain(d3.extent(arr, xAccessor))
@@ -293,6 +271,8 @@
 
         bounds.append("g")
             .attr("class", "grid_y2")
+            .attr("id", "grid_y2")
+
             // .style("stroke", "url(#svgGradient)")
             .attr("stroke-dasharray", "4px 4px")
             .call(y2_gridlines()
@@ -302,39 +282,37 @@
 
         const curve = d3.curveLinear
 
-
-
-        function mouseOn(d) {
+        function mouseOnBar(d) {
             div.transition()
                 .duration(200)
-                .style("opacity", 0.95)
+                .style("opacity", 0.9)
             d3.select(this)
                 .style("opacity", 1)
-            div.html("Impressions: " + d.impressions + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%")
+                div.html("Measured Impressions: " + add_commas(Math.round(d.measured_imp)) + "</br>" + "Viewable Impressions: " + add_commas(Math.round(d.view_imp)))
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
 
-        function mouseOut(d) {
+        function mouseOutBar(d) {
             div.transition()
                 .duration(200)
                 .style("opacity", 0);
             d3.select(this)
-                .style("opacity", 0.6)
+                .style("opacity", 0.9)
         };
 
-        function mouseOnLine(d) {
+        function mouseOnCircle(d) {
             div.transition()
                 .duration(200)
-                .style("opacity", 0.95)
+                .style("opacity", 0.9)
             d3.select(this)
-                .style("opacity", 0.3)
-            div.html("Partner:" + "<br/>" + "Impressions: ")
+                .style("opacity", 0.4)
+            div.html(Math.round(d.view_rate) + "%")
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
 
-        function mouseOutLine(d) {
+        function mouseOutCircle(d) {
             div.transition()
                 .duration(200)
                 .style("opacity", 0);
@@ -342,19 +320,9 @@
             .style("opacity", 0);
         };
 
-        var clip = bounds.append("defs").append("svg:clipPath")
-            .attr("id", "clip")
-            .append("svg:rect")
-            .attr("width", dimensions.boundedWidth)
-            .attr("height", dimensions.boundedHeight)
-            .attr("stroke","none")
-            .attr("x", 0)
-            .attr("y", 0);
-
 
         var area = bounds.append("g")
             .attr("class","areas")
-            .attr("clip-path", "url(#clip)")
 
             const curve2 = d3.curveBasis
 
@@ -363,7 +331,7 @@
                 .x(d => xxScale(xAccessor(d)))
                 .y0(yScale(0))
                 .y1(d => y3Scale(view_rate(d)))
-                .curve(curve2)
+                .curve(curve)
 
             area.append("path")
                 .datum(arr)
@@ -400,63 +368,6 @@
             .attr("d", path1)
 
 
-
-
-
-            // area.selectAll(".bar_2")
-            //   .data(arr)
-            //   .enter()
-            //   .append("rect")
-            //   .attr("class","bar_2")
-            //   .attr("fill", "#eee")
-            //   .attr("opacity","0.3")
-            //   .attr("x", d => xxScale(xAccessor(d)))
-            //   .attr("y", d => y3Scale(view_rate(d)))
-            //   .attr("height", d=> dimensions.boundedHeight - y3Scale(yAccessor(d)))
-            //   .attr("width", xScale.bandwidth());
-
-            // area.append("path")
-            //     .data(arr)
-            //     .attr("class", "ctrLine")
-            //     .attr("fill", 'none')
-            //     .attr("stroke-width", "1px")
-            //     .attr("stroke", "white")
-            //     .attr("d", line1(arr))
-
-
-
-          // area.selectAll("text")
-          // .data(arr)
-          // .enter()
-          // .append("text")
-          // .attr("x", d => xxScale(xAccessor(d)))
-          // .attr("y", yScale(0))
-          // .attr("fill", "white")
-          // .attr("font-size", "12px")
-          // // .text(function(d) { return d; });
-          // .text(d => Math.round(d.view_rate));
-          //
-
-
-        //
-        // area.selectAll("line")
-        //    .data(arr)
-        //    .enter()
-        //    .append("line")
-        //    .attr("stroke","#1b2326")
-        //    .style("opacity",0)
-        //    .attr("x1", d => xScale(xAccessor(d)))
-        //    .attr("y1", d => yScale(yAccessor(d)))
-        //    .attr("x2",d => xScale(xAccessor(d)))
-        //    .attr("y2",dimensions.boundedHeight);
-        //
-        // area.selectAll("line")
-        //     .on("mouseover", mouseOnLine)
-        //     .on("mouseout", mouseOutLine);
-
-
-
-
       area.selectAll(".bar")
         .data(arr)
         .enter()
@@ -469,20 +380,26 @@
         .attr("height", d=> dimensions.boundedHeight - yScale(yAccessor(d)))
         .attr("width", xScale.bandwidth());
 
-            function highlight(d) {
-                    d3.select('.areas')
-                    .transition()
-                    .duration(500)
-                    .style("opacity", 0)
-                    d3.select(this).style("opacity", 1)
-            };
+        area.selectAll(".bar")
+        .on("mouseover", mouseOnBar)
+        .on("mouseout", mouseOutBar);
 
-            function noHighlight(d) {
-                d3.select('.areas')
-                .transition()
-                .duration(500)
-                .style("opacity", 1)
-            };
+       area.selectAll("circle")
+          .data(arr)
+          .enter()
+          .append("circle")
+          .attr("id", "endPoints")
+          .attr("fill", "#7e9096")
+          .style("opacity", 0)
+          .attr("stroke", "none")
+          .attr("cx", d => xxScale(xAccessor(d)))
+          .attr("cy", d => y3Scale(view_rate(d)))
+          .attr("r",2)
+
+        area.selectAll("circle")
+            .on("mouseover", mouseOnCircle)
+            .on("mouseout", mouseOutCircle);
+
 
 
 
@@ -509,6 +426,7 @@
 
         const y2Axis = bounds.append("g")
             .attr("class","axisLine")
+            .attr("id","axisLine_right")
             .call(y2AxisGenerator)
             .style("transform", `translateX(${
               dimensions.boundedWidth
@@ -568,6 +486,42 @@
             .style("text-anchor", "middle")
             .attr("fill", " #1b2326")
 
-    }
+  if (document.querySelector('input[name="show_hide"]')) {
+        document.querySelectorAll('input[name="show_hide"]').forEach((elem) => {
+          elem.addEventListener("change", function() {
+            var dots = document.getElementById("endPoints");
+            var show = document.getElementById("show_icon");
+            var right_axis = document.getElementById("axisLine_right");
+            var gridlines = document.getElementById("grid_y2");
+            var area_2 = document.getElementById("area2");
+            var eye_open = document.getElementById("eye_open");
+            var eye_shut = document.getElementById("eye_shut");
 
+                if (show.checked == false ){
+                  right_axis.style.opacity = "0";
+                  gridlines.style.opacity = "0";
+                  area_2.style.opacity = "0";
+                  dots.style.opacity = "0";
+                  area_2.style.transition = "opacity .7s linear";
+                  right_axis.style.transition = "opacity .7s linear";
+                  gridlines.style.transition = "opacity .7s linear";
+                  eye_open.style.display = "none";
+                  eye_shut.style.display = "block";
+                }
+
+                if (show.checked == true ){
+                  right_axis.style.opacity = "0.5";
+                  gridlines.style.opacity = "1";
+                  area_2.style.opacity = "0.5";
+                  dots.style.opacity = "0.6";
+                  area_2.style.transition = "opacity .7s linear";
+                  right_axis.style.transition = "opacity .7s linear";
+                  gridlines.style.transition = "opacity .7s linear";
+                  eye_shut.style.display = "none";
+                  eye_open.style.display = "block";
+                }
+          });
+        });
+      }
+    }
 })();

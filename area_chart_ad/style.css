@@ -29,11 +29,11 @@ div.DTS div.dataTables_scrollBody {
 }
 
 .sheet_name {
-    background-color: #1B2326;
+    background-color: #f5f2ee;
     font-size: 22px;
     font-family: "League Gothic";
     /* text-transform: uppercase; */
-    color:white;
+    color:#1B2326;
     padding-left: 5px;
     margin-top: -3px;
     height: 28px;
@@ -48,7 +48,7 @@ div.DTS div.dataTables_scrollBody {
 .legend_name{
   display: flex;
   letter-spacing: -0.5px;
-  color: white;
+  color: #1B2326;
   font-family: "Arial";
   font-size: 10px;
   margin-left:3px;
@@ -75,6 +75,33 @@ div.DTS div.dataTables_scrollBody {
   margin-top: 2px;
 }
 
+.show_icon{
+  opacity: 0;
+  position: absolute;
+  margin-left: 94.5vw;
+  margin-top: 24vh;
+}
+input{
+  width: 15px;
+  height: 15px;
+}
+
+#eye_open{
+  opacity: 0.6;
+  position: absolute;
+  margin-left: 94.5vw;
+  margin-top: 24vh;
+  width: 12px;
+}
+#eye_shut{
+  display: none;
+  opacity: 0.6;
+  position: absolute;
+  margin-left: 94.5vw;
+  margin-top: 24vh;
+  width: 12px;
+}
+
 div.tooltip {
     /* position:absolute; */
     display: flex;
@@ -88,9 +115,10 @@ div.tooltip {
     color: #f5f2ee;
     font-size: 12px;
     border: 0px;
-    border-radius: 8px;
+    border-radius: 5px;
     pointer-events: none;
 }
+
 
 .grid_y2 path{
   stroke: none;

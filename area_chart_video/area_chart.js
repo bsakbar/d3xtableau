@@ -93,11 +93,12 @@
             for (const [key, value] of Object.entries(sums))
                 sumsArr.push(value)
 
-            sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
-            console.log(sumsArr)
+                sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
+                var trimmed_arr = sumsArr.slice(26, 30)
 
+                console.log(trimmed_arr)
+                drawDotChart(trimmed_arr);
 
-            drawDotChart(sumsArr);
 
 
         });
