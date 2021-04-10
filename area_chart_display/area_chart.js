@@ -72,6 +72,7 @@
                  var date = newArr[i]["Week Commencing"]
                  var video_type = newArr[i]["Video Type"]
                  var client = newArr[i]["Client "]
+                 var ctr_perf = newArr[i]["AGG(3. CTR Performance)"]
 
 
                 var client_date = client + '_' + date
@@ -84,6 +85,7 @@
 
                 } else {
                     sums[client_date] = {
+                        "ctr_perf": ctr_perf,
                         "impressions": impressions,
                         "ctr": ctr,
                         "client": client,
@@ -149,18 +151,27 @@
 
     function drawDotChart(arr) {
         $('#wrapper').empty();
-        const dateParser = d3.timeParse("%Y-%m-%d")
+        const dateParser = d3.utcParse("%Y-%m-%d")
         const formatDate = d3.timeFormat("%b %-d, %Y")
         // const formatDate = d3.timeFormat("%b %d")
         const formatDate2 = d3.timeFormat("%b %d")
-        const xAccessor = d => dateParser(d.date)
+        const xAccessor = d => Date.parse(dateParser(d.date))
         const yAccessor = d => d.impressions
         const y2Accessor = d => d.ctr
         const clicks = d => d.clicks
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const client = d => d.client
-        const average_y2 = d =>d3.mean(arr, y2Accessor).toFixed(2);
+        var average_y2 = d3.mean(arr, y2Accessor).toFixed(2);
 
+        console.log(average_y2)
+
+
+        for (let i=0; i < 5; i++){
+          console.log(Date.parse(arr[i].date))
+          console.log(dateParser(arr[i].date))
+          console.log(Date.parse(dateParser(arr[i].date)))
+
+        }
 
 
         const width = d3.min([
@@ -206,9 +217,10 @@
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-        const xScale = d3.scaleTime()
+        const xScale = d3.scaleUtc()
             .domain(d3.extent(arr, xAccessor))
             .range([0, dimensions.boundedWidth])
+
 
         const yScale = d3.scaleLinear()
             .domain(d3.extent(arr, yAccessor))
@@ -225,6 +237,7 @@
             .range([2, 8])
 
 
+
         function x_gridlines() {
             return d3.axisBottom(xScale)
                 .ticks(0)
@@ -239,6 +252,8 @@
             return d3.axisRight(y2Scale)
                 .ticks(0)
         }
+
+
 
         bounds.append("g")
             .attr("class", "grid")
@@ -263,16 +278,48 @@
                 .tickFormat("")
             )
 
+        var clip = bounds.append("defs").append("svg:clipPath")
+            .attr("id", "clip")
+            .append("svg:rect")
+            .attr("width", dimensions.boundedWidth)
+            .attr("height", dimensions.boundedHeight)
+            .attr("stroke","none")
+            .attr("x", 0)
+            .attr("y", 0);
+
         const curve = d3.curveLinear
 
+        var area = bounds.append("g")
+            .attr("class","areas")
+            .attr("clip-path", "url(#clip)")
 
-        function line_color_ind(d) {
-            if (y2Accessor(d) < average_y2(d)) {
-                return "#e15759"
-            } else {
-                return "#4e79a7"
-            };
+        var colorId = area.append("color");
+        var conditions = ["Below", "Exceed"];
+        var colors = ["#e15759","#8ab562"];
+
+
+        for (let i=0; i<arr.length; i++){
+          console.log(arr[i].ctr, arr[i].ctr<4)
         }
+
+        const color = d3.scaleOrdinal(
+          arr.conditions === undefined ? arr.map(d => d.ctr_perf) : arr.conditions,
+          arr.colors === undefined ? d3.schemeCategory10 : arr.colors
+        ).unknown("white")
+
+        area.append("linearGradient")
+        .attr("id", "colorId")
+        .attr("gradientUnits", "userSpaceOnUse")
+        .attr("x1", 0)
+        .attr("x2", dimensions.boundedWidth)
+        .selectAll("stop")
+        .data(arr)
+        .enter()
+        .append("stop")
+        .attr("offset", d => xScale(Date.parse(dateParser(d.date))) / dimensions.boundedWidth)
+        // .attr("stop-color", d => color(d.ctr_perf));
+        .attr("stop-color", d => d.ctr < average_y2 ? colors[0] : colors[1]);
+
 
 
         function mouseOn(d) {
@@ -313,14 +360,7 @@
             .style("opacity", 0);
         };
 
-        var clip = bounds.append("defs").append("svg:clipPath")
-            .attr("id", "clip")
-            .append("svg:rect")
-            .attr("width", dimensions.boundedWidth)
-            .attr("height", dimensions.boundedHeight)
-            .attr("stroke","none")
-            .attr("x", 0)
-            .attr("y", 0);
+
 
         var brush = d3.brushX()
             .extent([
@@ -329,9 +369,7 @@
             ])
             .on("end", updateChart)
 
-        var area = bounds.append("g")
-            .attr("class","areas")
-            .attr("clip-path", "url(#clip)")
+
 
         const path1 = d3.area()
             .x(d => xScale(xAccessor(d)))
@@ -394,8 +432,8 @@
             .data(arr)
             .attr("class", "ctrLine")
             .attr("fill", 'none')
-            .attr("stroke-width","1px")
-            .attr("stroke", "white")
+            .attr("stroke-width","2px")
+            .attr("stroke", "url(#colorId)")
             .attr("d", line1(arr))
         //
         //
@@ -436,17 +474,17 @@
 
 
         const avgLine_y = bounds.append("line")
-            .attr("y1", d => y2Scale(average_y2(d)))
-            .attr("y2", d => y2Scale(average_y2(d)))
+            .attr("y1", d => y2Scale(average_y2))
+            .attr("y2", d => y2Scale(average_y2))
             .attr("x1", 0)
             .attr("x2", dimensions.boundedWidth)
-            .attr("stroke", "#D93251")
-            .attr("stroke-width", "2px")
+            .attr("stroke", "white")
+            .attr("stroke-width", "1px")
             .attr("weight", 3)
             .attr("stroke-dasharray", "5px 5px")
 
         const avgLabel_y = bounds.append("text")
-            .attr("y", d => y2Scale(average_y2(d)) - 5)
+            .attr("y", d => y2Scale(average_y2) - 5)
             .attr("x", 10)
             .style("font-weight", "bold")
             .text("Avg CTR:")
@@ -463,8 +501,8 @@
             .data(arr)
             .enter()
             .append("text")
-            .text(d => average_y2(d) * 10 + "%")
-            .attr("y", d => y2Scale(average_y2(d)) + 15)
+            .text(d => average_y2 * 10 + "%")
+            .attr("y", d => y2Scale(average_y2) + 15)
             .attr("x", 10)
             .style("font-size", "10px")
             .attr("font-family", "Arial")
@@ -550,7 +588,7 @@
         const y2AxisGenerator = d3.axisRight()
             .scale(y2Scale)
             .ticks(5)
-            .tickFormat(d => d + "%");
+            .tickFormat(d => d * 10 + "%");
 
         const y2Axis = bounds.append("g")
             .attr("class","axisLine")
