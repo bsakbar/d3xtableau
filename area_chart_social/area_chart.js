@@ -178,6 +178,7 @@
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         // Average engagement rate line
         const average_y2 = d => d3.mean(arr, y2Accessor).toFixed(2);
+        const capitalizeFirstLetter = d => d.charAt(0).toUpperCase() + d.slice(1)
 
         // Since we want to show 4 seperate areas, each partner will have its own array
         var arr_1 = []
@@ -356,7 +357,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.3)
-            div.html("Partner:" + d.partner + "<br/>" + "Impressions: " + d.impressions)
+            div.html("Partner: " + capitalizeFirstLetter(d.partner) + "<br/>" + "Impressions: " + add_commas(d.impressions))
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -511,7 +512,8 @@
             .attr("class", "ctrLine")
             .attr("fill", 'none')
             .attr("stroke-width", "1px")
-            .attr("stroke", "white")
+            .attr("stroke", "#1B2326")
+            .attr("opacity", 0.7)
             .attr("d", line1(arr))
 
         // Engagement rate average line
@@ -520,8 +522,8 @@
             .attr("y2", d => y2Scale(average_y2(d)))
             .attr("x1", 0)
             .attr("x2", dimensions.boundedWidth)
-            .attr("stroke", "#D93251")
-            .attr("stroke-width", "2px")
+            .attr("stroke", "#1b2326")
+            .attr("stroke-width", "1px")
             .attr("weight", 3)
             .attr("stroke-dasharray", "5px 5px")
 
@@ -530,7 +532,7 @@
             .attr("x", 10)
             .style("font-weight", "bold")
             .text("Avg Engagement Rate:")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
             .style("font-size", "10px")
             .attr("font-family", "Arial")
 
@@ -546,7 +548,7 @@
             .attr("x", 10)
             .style("font-size", "10px")
             .attr("font-family", "Arial")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
 
         // brush feature and zooming-in
@@ -679,7 +681,7 @@
             .style("font-size", "10")
             .style("font-weight", "bold")
             .html("")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
         const yAxisLabel = yAxis.append("text")
             .attr("x", -dimensions.boundedHeight / 2)
@@ -690,7 +692,7 @@
             .html("Impressions")
             .style("transform", "rotate(-90deg)")
             .style("text-anchor", "middle")
-            .style("fill", "white")
+            .style("fill", "#1B2326")
 
         const y2AxisLabel = y2Axis.append("text")
             .attr("x", dimensions.boundedHeight / 2)
@@ -701,6 +703,6 @@
             .html("Engagement Rate")
             .style("transform", "rotate(90deg)")
             .style("text-anchor", "middle")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
     }
 })();

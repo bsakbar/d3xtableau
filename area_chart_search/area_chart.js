@@ -163,6 +163,7 @@
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const partners = d => d.partner
         const average_y2 = d =>d3.mean(arr, y2Accessor).toFixed(2);
+        const capitalizeFirstLetter = d => d.charAt(0).toUpperCase() + d.slice(1);
 
         var arr_1 = []
         var arr_2 = []
@@ -367,8 +368,8 @@
                 .duration(200)
                 .style("opacity", 0.95)
             d3.select(this)
-                .style("opacity", 1)
-            div.html("Impressions: " + d.impressions + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%" + "<br/>" + "Clicks: " + d.clicks)
+                .style("opacity", 0.7)
+            div.html("Impressions: " + add_commas(d.impressions) + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%" + "<br/>" + "Clicks: " + add_commas(d.clicks))
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -378,7 +379,7 @@
                 .duration(200)
                 .style("opacity", 0);
             d3.select(this)
-                .style("opacity", 0.6)
+                .style("opacity", 0.3)
         };
 
         function mouseOnLine(d) {
@@ -387,7 +388,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.3)
-            div.html("Partner:" + d.partner + "<br/>" + "Impressions: " + d.impressions)
+            div.html("Partner: " + capitalizeFirstLetter(d.partner)  + "<br/>" + "Impressions: " + add_commas(d.impressions))
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -524,7 +525,8 @@
             .attr("class", "ctrLine")
             .attr("fill", 'none')
             .attr("stroke-width","0.4px")
-            .attr("stroke", "white")
+            .attr("stroke", "#1B2326")
+            .attr("opacity", 0.7)
             .attr("d", line1(arr))
 
 
@@ -533,8 +535,8 @@
            .enter()
            .append("circle")
            .attr("class", "endPoints")
-           .attr("fill", "white")
-           .style("opacity", 0.6)
+           .attr("fill", "#1B2326")
+           .style("opacity", 0.3)
            .attr("stroke", "none")
            .attr("cx", d => xScale(xAccessor(d)))
            .attr("cy", d => y2Scale(y2Accessor(d)))
@@ -569,8 +571,8 @@
             .attr("y2", d => y2Scale(average_y2(d)))
             .attr("x1", 0)
             .attr("x2", dimensions.boundedWidth)
-            .attr("stroke", "#D93251")
-            .attr("stroke-width", "2px")
+            .attr("stroke", "#1B2326")
+            .attr("stroke-width", "1px")
             .attr("weight", 3)
             .attr("stroke-dasharray", "5px 5px")
 
@@ -579,7 +581,7 @@
             .attr("x", 10)
             .style("font-weight", "bold")
             .text("Avg CTR:")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
             .style("font-size", "10px")
             .attr("font-family", "Arial")
 
@@ -597,7 +599,7 @@
             .attr("x", 10)
             .style("font-size", "10px")
             .attr("font-family", "Arial")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
 
         var idleTimeout
@@ -731,7 +733,7 @@
             .style("font-size", "10")
             .style("font-weight", "bold")
             .html("")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
         const yAxisLabel = yAxis.append("text")
             .attr("x", -dimensions.boundedHeight / 2)
@@ -742,7 +744,7 @@
             .html("Impressions")
             .style("transform", "rotate(-90deg)")
             .style("text-anchor", "middle")
-            .style("fill", "white")
+            .style("fill", "#1B2326")
 
         const y2AxisLabel = y2Axis.append("text")
             .attr("x", dimensions.boundedHeight / 2)
@@ -753,7 +755,7 @@
             .html("CTR")
             .style("transform", "rotate(90deg)")
             .style("text-anchor", "middle")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
     }
 

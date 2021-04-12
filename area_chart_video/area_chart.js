@@ -94,7 +94,7 @@
                 sumsArr.push(value)
 
                 sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
-                var trimmed_arr = sumsArr.slice(26, 30)
+                var trimmed_arr = sumsArr.slice(27)
 
                 console.log(trimmed_arr)
                 drawDotChart(trimmed_arr);
@@ -253,7 +253,7 @@
 
         function y_gridlines() {
             return d3.axisLeft(yScale)
-                .ticks(10)
+                .ticks(5)
         }
 
         function y2_gridlines() {
@@ -416,7 +416,8 @@
             .attr("class", "ctrLine")
             .attr("fill", 'none')
             .attr("stroke-width","1px")
-            .attr("stroke", "white")
+            .attr("opacity", 0.7)
+            .attr("stroke", "#1B2326")
             .attr("d", line1(arr))
 
         // area.selectAll("circle")
@@ -448,8 +449,8 @@
             .attr("y2", d => y2Scale(average_y2(d)))
             .attr("x1", 0)
             .attr("x2", dimensions.boundedWidth)
-            .attr("stroke", "#D93251")
-            .attr("stroke-width", "2px")
+            .attr("stroke", "#1b2326")
+            .attr("stroke-width", "1px")
             .attr("weight", 3)
             .attr("stroke-dasharray", "5px 5px")
 
@@ -458,7 +459,7 @@
             .attr("x", 10)
             .style("font-weight", "bold")
             .text("Avg VCR:")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
             .style("font-size", "10px")
             .attr("font-family", "Arial")
 
@@ -476,7 +477,7 @@
             .attr("x", 10)
             .style("font-size", "10px")
             .attr("font-family", "Arial")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
 
         var idleTimeout
@@ -502,7 +503,7 @@
             // Update axis and area position
             xAxis.transition().duration(1000).call(
               d3.axisBottom(xScale)
-              .ticks(10)
+              .ticks(5)
               .tickFormat(formatDate2))
 
 
@@ -524,7 +525,7 @@
         bounds.on("dblclick", function() {
             xScale.domain(d3.extent(arr, xAccessor))
             xAxis.transition().call(d3.axisBottom(xScale)
-            .ticks(10)
+            .ticks(5)
             .tickFormat(formatDate))
             area
                 .select('.area1')
@@ -574,7 +575,7 @@
 
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
-            .ticks(10)
+            .ticks(5)
             .tickFormat(formatDate);
 
 
@@ -594,7 +595,7 @@
             .style("font-size", "10")
             .style("font-weight", "bold")
             .html("")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
         const yAxisLabel = yAxis.append("text")
             .attr("x", -dimensions.boundedHeight / 2)
@@ -605,7 +606,7 @@
             .html("Video Plays")
             .style("transform", "rotate(-90deg)")
             .style("text-anchor", "middle")
-            .style("fill", "white")
+            .style("fill", "#1B2326")
 
         const y2AxisLabel = y2Axis.append("text")
             .attr("x", dimensions.boundedHeight / 2)
@@ -616,7 +617,7 @@
             .html("VCR")
             .style("transform", "rotate(90deg)")
             .style("text-anchor", "middle")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
     }
 

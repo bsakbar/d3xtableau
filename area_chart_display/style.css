@@ -1,6 +1,6 @@
 body{
-  background-color: #1b2326;
-  /* background-color: white; */
+  background-color: #f5f2ee;
+  /* background-color: #1B2326; */
   overflow: hidden;
 
 }
@@ -26,15 +26,15 @@ form{
 }
 
 div.DTS div.dataTables_scrollBody {
-    background-color: white;
+    background-color: #1B2326;
 }
 
 .sheet_name {
-    background-color: #1B2326;
+    background-color: #f5f2ee;
     font-size: 22px;
     font-family: "League Gothic";
     /* text-transform: uppercase; */
-    color:white;
+    color:#1B2326;
     padding-left: 5px;
     margin-top: -3px;
     height: 32px;
@@ -49,7 +49,7 @@ div.DTS div.dataTables_scrollBody {
 .legend_name{
   display: flex;
   letter-spacing: -0.5px;
-  color: white;
+  color: #1B2326;
   font-family: "Arial";
   font-size: 10px;
   margin-left:3px;
@@ -59,7 +59,7 @@ div.DTS div.dataTables_scrollBody {
 
 .legend_below{
   display: flex;
-  color: white;
+  color: #1B2326;
   background-color: #e15759;
   height: 10px;
   width:10px;
@@ -68,7 +68,7 @@ div.DTS div.dataTables_scrollBody {
 }
 .legend_over{
   display: flex;
-  color: white;
+  color: #1B2326;
   background-color: #8ab562;
   height: 10px;
   width:10px;
@@ -98,21 +98,21 @@ div.tooltip {
 }
 
 .ctrLine line{
-  stroke: white;
+  stroke: #1B2326;
   stroke-width:0.4px;
 }
 
 .axisLine text{
-  fill: white;
+  fill: #1B2326;
 }
 
 .axisLine path{
-    stroke: white;
+    stroke: #1B2326;
     opacity: 0.5;
   }
 
   .axisLine line{
-    stroke: white;
+    stroke: #1B2326;
     opacity: 0.5;
   }
 #wrapper{
@@ -128,7 +128,7 @@ div.tooltip {
 } */
 
 .grid line {
-  stroke: white;
+  stroke: #1B2326;
   stroke-opacity: 0.2;
 }
 

@@ -50,11 +50,14 @@
                      }
 
 
+                     if (dataJson['Campaign'].includes("Display") || dataJson['Campaign'].includes("DISPLAY") && (dataJson['Client '] == ['AMAG'])){
+                       newArr.push(dataJson);
 
-                       if (dataJson['Client '] == ['AMAG']){
-                           newArr.push(dataJson);
-
-                       }
+                     }
+                       // if (dataJson['Client '] == ['AMAG']){
+                       //     newArr.push(dataJson);
+                       //
+                       // }
 
 
 
@@ -73,6 +76,7 @@
                  var video_type = newArr[i]["Video Type"]
                  var client = newArr[i]["Client "]
                  var ctr_perf = newArr[i]["AGG(3. CTR Performance)"]
+                 var campaign = newArr[i]["Campaign"]
 
 
                 var client_date = client + '_' + date
@@ -86,6 +90,7 @@
                 } else {
                     sums[client_date] = {
                         "ctr_perf": ctr_perf,
+                        "campaign": campaign,
                         "impressions": impressions,
                         "ctr": ctr,
                         "client": client,
@@ -163,15 +168,15 @@
         const client = d => d.client
         var average_y2 = d3.mean(arr, y2Accessor).toFixed(2);
 
-        console.log(average_y2)
+        // console.log(average_y2)
 
 
-        for (let i=0; i < 5; i++){
-          console.log(Date.parse(arr[i].date))
-          console.log(dateParser(arr[i].date))
-          console.log(Date.parse(dateParser(arr[i].date)))
-
-        }
+        // for (let i=0; i < 5; i++){
+        //   console.log(Date.parse(arr[i].date))
+        //   console.log(dateParser(arr[i].date))
+        //   console.log(Date.parse(dateParser(arr[i].date)))
+        //
+        // }
 
 
         const width = d3.min([
@@ -245,7 +250,7 @@
 
         function y_gridlines() {
             return d3.axisLeft(yScale)
-                .ticks(10)
+                .ticks(5)
         }
 
         function y2_gridlines() {
@@ -298,14 +303,14 @@
         var colors = ["#e15759","#8ab562"];
 
 
-        for (let i=0; i<arr.length; i++){
-          console.log(arr[i].ctr, arr[i].ctr<4)
-        }
+        // for (let i=0; i<arr.length; i++){
+        //   console.log(arr[i].ctr, arr[i].ctr<4)
+        // }
 
         const color = d3.scaleOrdinal(
           arr.conditions === undefined ? arr.map(d => d.ctr_perf) : arr.conditions,
           arr.colors === undefined ? d3.schemeCategory10 : arr.colors
-        ).unknown("white")
+        ).unknown("#1B2326")
 
         area.append("linearGradient")
         .attr("id", "colorId")
@@ -388,7 +393,7 @@
             .transition()
             .duration(900)
             .attr("fill", "#7e9096")
-            .attr("opacity", .9)
+            .attr("opacity", .5)
             .attr("d", path1)
 
 
@@ -442,7 +447,7 @@
         //    .enter()
         //    .append("circle")
         //    .attr("class", "endPoints")
-        //    .attr("fill", "white")
+        //    .attr("fill", "#1B2326")
         //    .style("opacity", 0.6)
         //    .attr("stroke", "none")
         //    .attr("cx", d => xScale(xAccessor(d)))
@@ -478,7 +483,7 @@
             .attr("y2", d => y2Scale(average_y2))
             .attr("x1", 0)
             .attr("x2", dimensions.boundedWidth)
-            .attr("stroke", "white")
+            .attr("stroke", "#1B2326")
             .attr("stroke-width", "1px")
             .attr("weight", 3)
             .attr("stroke-dasharray", "5px 5px")
@@ -488,7 +493,7 @@
             .attr("x", 10)
             .style("font-weight", "bold")
             .text("Avg CTR:")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
             .style("font-size", "10px")
             .attr("font-family", "Arial")
 
@@ -506,7 +511,7 @@
             .attr("x", 10)
             .style("font-size", "10px")
             .attr("font-family", "Arial")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
 
         var idleTimeout
@@ -532,7 +537,7 @@
             // Update axis and area position
             xAxis.transition().duration(1000).call(
               d3.axisBottom(xScale)
-              .ticks(10)
+              .ticks(5)
               .tickFormat(formatDate2))
 
 
@@ -554,7 +559,7 @@
         bounds.on("dblclick", function() {
             xScale.domain(d3.extent(arr, xAccessor))
             xAxis.transition().call(d3.axisBottom(xScale)
-            .ticks(10)
+            .ticks(5)
             .tickFormat(formatDate))
             area
                 .select('.area1')
@@ -604,7 +609,7 @@
 
         const xAxisGenerator = d3.axisBottom()
             .scale(xScale)
-            .ticks(10)
+            .ticks(5)
             .tickFormat(formatDate);
 
 
@@ -624,7 +629,7 @@
             .style("font-size", "10")
             .style("font-weight", "bold")
             .html("")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
         const yAxisLabel = yAxis.append("text")
             .attr("x", -dimensions.boundedHeight / 2)
@@ -635,7 +640,7 @@
             .html("Impressions")
             .style("transform", "rotate(-90deg)")
             .style("text-anchor", "middle")
-            .style("fill", "white")
+            .style("fill", "#1B2326")
 
         const y2AxisLabel = y2Axis.append("text")
             .attr("x", dimensions.boundedHeight / 2)
@@ -646,7 +651,7 @@
             .html("CTR")
             .style("transform", "rotate(90deg)")
             .style("text-anchor", "middle")
-            .attr("fill", "white")
+            .attr("fill", "#1B2326")
 
     }
 
