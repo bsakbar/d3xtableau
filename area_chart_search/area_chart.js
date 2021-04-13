@@ -594,7 +594,7 @@
             .data(arr)
             .enter()
             .append("text")
-            .text(d => average_y2(d) * 10 + "%")
+            .text(d => Math.round(average_y2(d) * 10) + "%")
             .attr("y", d => y2Scale(average_y2(d)) + 15)
             .attr("x", 10)
             .style("font-size", "10px")

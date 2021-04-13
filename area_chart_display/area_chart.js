@@ -49,15 +49,13 @@
                        }
                      }
 
+                     newArr.push(dataJson);
 
-                     if (dataJson['Campaign'].includes("Display") || dataJson['Campaign'].includes("DISPLAY") && (dataJson['Client '] == ['AMAG'])){
-                       newArr.push(dataJson);
+                     // if (dataJson['Campaign'].includes("Display") || dataJson['Campaign'].includes("DISPLAY")){
+                     //   newArr.push(dataJson);
+                     //
+                     // }
 
-                     }
-                       // if (dataJson['Client '] == ['AMAG']){
-                       //     newArr.push(dataJson);
-                       //
-                       // }
 
 
 

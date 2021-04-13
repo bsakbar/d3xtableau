@@ -48,11 +48,12 @@
                       dataJson[cols[i]] = d[i].value;
                       }
                     }
+                    newArr.push(dataJson);
 
-                      if (dataJson['Video Type'] == 'non-skippable'){
-                          newArr.push(dataJson);
-
-                      }
+                      // if (dataJson['Video Type'] == 'non-skippable'){
+                      //     newArr.push(dataJson);
+                      //
+                      // }
 
             });
 
@@ -97,7 +98,7 @@
                 var trimmed_arr = sumsArr.slice(27)
 
                 console.log(trimmed_arr)
-                drawDotChart(trimmed_arr);
+                drawDotChart(sumsArr);
 
 
 
@@ -472,7 +473,7 @@
             .data(arr)
             .enter()
             .append("text")
-            .text(d => average_y2(d) * 10 + "%")
+            .text(d => Math.round(average_y2(d) * 10) + "%")
             .attr("y", d => y2Scale(average_y2(d)) + 15)
             .attr("x", 10)
             .style("font-size", "10px")
