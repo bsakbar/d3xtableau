@@ -160,7 +160,18 @@
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const average_y2 = d =>d3.mean(arr, y2Accessor).toFixed(2);
 
-
+        var arr_1 = []
+        var arr_2 = []
+        var arr_3 = []
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i].video_type == 'non-skippable') {
+                arr_1.push(arr[i])
+            } else if (arr[i].video_type == 'NA') {
+                arr_2.push(arr[i])
+            } else if (arr[i].video_type == 'skippable') {
+                arr_3.push(arr[i])
+            }
+        }
 
         const width = d3.min([
             window.innerWidth * 0.95,
@@ -322,7 +333,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.3)
-            div.html("Video Views: " + d.video_plays + "<br/>" + "VCR: " + d.vcr.toFixed(2) +"%" )
+            div.html("Video Views: " + add_commas(d.video_plays) + "<br/>" + "VCR: " + d.vcr.toFixed(2) +"%" )
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -361,29 +372,61 @@
             .y1(d => yScale(yAccessor(d)))
             .curve(curve)
 
+        const path2 = d3.area()
+            .x(d => xScale(xAccessor(d)))
+            .y0(yScale(0))
+            .y1(d => yScale(yAccessor(d)))
+            .curve(curve)
+
+        const path3 = d3.area()
+            .x(d => xScale(xAccessor(d)))
+            .y0(yScale(0))
+            .y1(d => yScale(yAccessor(d)))
+            .curve(curve)
+
+      area.append("path")
+          .datum(arr_2)
+          .transition()
+          .duration(600)
+          .attr("opacity",0)
+          .attr("id", "area3")
+          .attr("class", "area3")
+          .transition()
+          .duration(800)
+          .attr("fill", "#d93251")
+          .attr("opacity", .9)
+          .attr("d", path3)
+
+      area.append("path")
+          .datum(arr_2)
+          .transition()
+          .duration(600)
+          .attr("opacity",0)
+          .attr("id", "area2")
+          .attr("class", "area2")
+          .transition()
+          .duration(800)
+          .attr("fill", "#4e79a7")
+          .attr("opacity", .9)
+          .attr("d", path2)
 
         area.append("path")
-            .datum(arr)
+            .datum(arr_1)
             .transition()
             .duration(300)
             .attr("opacity",0)
             .attr("id", "area1")
             .attr("class", "area1")
-            // .attr("fill", "url(#gradient1)")
             .transition()
             .duration(900)
             .attr("fill", "#5EC7EB")
             .attr("opacity", .9)
             .attr("d", path1)
 
-
         area
             .append("g")
             .attr("class", "brush")
             .call(brush);
-
-
-
 
         area.selectAll("line")
            .data(arr)
@@ -399,9 +442,6 @@
         area.selectAll("line")
             .on("mouseover", mouseOnLine)
             .on("mouseout", mouseOutLine);
-
-
-
 
         const curve2 = d3.curveLinear
 
@@ -473,7 +513,7 @@
             .data(arr)
             .enter()
             .append("text")
-            .text(d => Math.round(average_y2(d) * 10) + "%")
+            .text(d => Math.round(average_y2(d)) + "%")
             .attr("y", d => y2Scale(average_y2(d)) + 15)
             .attr("x", 10)
             .style("font-size", "10px")
@@ -515,6 +555,18 @@
                 .attr("d", path1)
 
             area
+                .select('.area2')
+                .transition()
+                .duration(1000)
+                .attr("d", path2)
+
+            area
+                .select('.area3')
+                .transition()
+                .duration(1000)
+                .attr("d", path3)
+
+            area
                 .select('.ctrLine')
                 .transition()
                 .duration(1000)
@@ -532,6 +584,14 @@
                 .select('.area1')
                 .transition()
                 .attr("d", path1)
+            area
+                .select('.area2')
+                .transition()
+                .attr("d", path2)
+            area
+                .select('.area3')
+                .transition()
+                .attr("d", path3)
 
             area
                 .select('.ctrLine')
@@ -541,7 +601,7 @@
 
         });
 
-        const remove_zero = d => (d / 1e4) + "K";
+        const remove_zero = d => (d / 1e6) + "M";
 
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
@@ -560,7 +620,7 @@
         const y2AxisGenerator = d3.axisRight()
             .scale(y2Scale)
             .ticks(5)
-            .tickFormat(d => (d * 10) + "%");
+            .tickFormat(d => d + "%");
 
         const y2Axis = bounds.append("g")
             .attr("class","axisLine")

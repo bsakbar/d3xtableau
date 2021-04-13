@@ -120,7 +120,7 @@ div.tooltip {
     color: white;
     font-size: 12px;
     border: 0px;
-    border-radius: 8px;
+    border-radius: 5px;
     pointer-events: none;
 }
 

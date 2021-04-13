@@ -85,11 +85,11 @@ div.tooltip {
     padding: 10px;
     /* padding-left: 10px; */
     font-family: "Arial";
-    background: #F5F2EE;
-    color: #1b2326;
+    background: #1b2326;
+    color: #F5F2EE;
     font-size: 12px;
     border: 0px;
-    border-radius: 8px;
+    border-radius: 5px;
     pointer-events: none;
 }
 

@@ -325,6 +325,7 @@
 
 
 
+
         function mouseOn(d) {
             div.transition()
                 .duration(200)
@@ -350,7 +351,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.3)
-            div.html("Partner:" + d.client + "<br/>" + "Impressions: " + d.impressions)
+            div.html("Client: " + d.client + "<br/>" + "Impressions: " + add_commas(d.impressions))
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -399,6 +400,23 @@
             .append("g")
             .attr("class", "brush")
             .call(brush);
+
+            area.selectAll("line")
+               .data(arr)
+               .enter()
+               .append("line")
+               .attr("stroke","#1b2326")
+               .style("opacity",0)
+               .attr("x1", d => xScale(xAccessor(d)))
+               .attr("y1", d => yScale(yAccessor(d)))
+               .attr("x2",d => xScale(xAccessor(d)))
+               .attr("y2",dimensions.boundedHeight);
+
+            area.selectAll("line")
+                .on("mouseover", mouseOnLine)
+                .on("mouseout", mouseOutLine);
+
+
 
 
         //
@@ -504,7 +522,7 @@
             .data(arr)
             .enter()
             .append("text")
-            .text(d => average_y2 * 10 + "%")
+            .text(d => Math.round(average_y2) + "%")
             .attr("y", d => y2Scale(average_y2) + 15)
             .attr("x", 10)
             .style("font-size", "10px")
@@ -572,7 +590,7 @@
 
         });
 
-        const remove_zero = d => (d / 1e4) + "K";
+        const remove_zero = d => (d / 1e6) + "M";
 
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
@@ -591,7 +609,7 @@
         const y2AxisGenerator = d3.axisRight()
             .scale(y2Scale)
             .ticks(5)
-            .tickFormat(d => d * 10 + "%");
+            .tickFormat(d => d + "%");
 
         const y2Axis = bounds.append("g")
             .attr("class","axisLine")

@@ -42,13 +42,12 @@
              worksheetData.data.map(d => {
                      dataJson = {};
                      for (let i=0; i < cols.length; i++){
-                       if (cols[i].includes("SUM(Viewable Impressions)") || cols[i].includes("SUM(Viewable Impressions)")) {
+                       if (cols[i].includes("SUM(Viewable Impressions)") || cols[i].includes("SUM(Viewable Impressions)")){
                          dataJson[cols[i]] = !isNaN(d[i].value) ? d[i].value : 0;
                        } else {
                        dataJson[cols[i]] = d[i].value;
                        }
                      }
-
                      newArr.push(dataJson);
 
 
@@ -92,8 +91,8 @@
             sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
 
             var trimmed_arr = sumsArr.slice(51)
-            console.log(trimmed_arr)
-            drawDotChart(trimmed_arr);
+            console.log(sumsArr)
+            drawDotChart(sumsArr);
 
 
         });
@@ -327,31 +326,17 @@
             const curve2 = d3.curveBasis
 
 
-            const path2 = d3.area()
-                .x(d => xxScale(xAccessor(d)))
-                .y0(yScale(0))
-                .y1(d => y3Scale(view_rate(d)))
-                .curve(curve)
+          const path2 = d3.line()
+              .x(d => xxScale(xAccessor(d)))
+              // .y0(yScale(0))
+              .y(d => y3Scale(view_rate(d)))
+              .curve(curve)
 
-            area.append("path")
-                .datum(arr)
-                .transition()
-                .duration(300)
-                .attr("opacity",0)
-                .attr("id", "area2")
-                .attr("class", "area2")
-                .transition()
-                .duration(900)
-                .attr("fill", "#7e9096")
-                .attr("stroke","none")
-                .attr("opacity", .5)
-                .attr("d", path2)
-
-        const path1 = d3.area()
-            .x(d => xxScale(xAccessor(d)))
-            .y0(yScale(0))
-            .y1(d => y2Scale(y2Accessor(d)))
-            .curve(curve)
+          const path1 = d3.area()
+              .x(d => xxScale(xAccessor(d)))
+              .y0(yScale(0))
+              .y1(d => y2Scale(y2Accessor(d)))
+              .curve(curve)
 
 
         area.append("path")
@@ -366,6 +351,7 @@
             .attr("fill", "#4e79a7")
             .attr("opacity", 1)
             .attr("d", path1)
+
 
 
       area.selectAll(".bar")
@@ -401,9 +387,25 @@
             .on("mouseout", mouseOutCircle);
 
 
+        area.append("path")
+            .datum(arr)
+            .transition()
+            .duration(300)
+            .attr("opacity",0)
+            .attr("id", "area2")
+            .attr("class", "area2")
+            .transition()
+            .duration(900)
+            .attr("fill", "none")
+            .attr("stroke","black")
+            .attr("opacity", 0.5)
+            .attr("stroke-width", "2px")
+            .attr("d", path2)
 
 
-        const remove_zero = d => (d / 1e3) + "K";
+
+
+        const remove_zero = d => (d / 1e6) + "M";
 
         const yAxisGenerator = d3.axisLeft()
             .scale(yScale)
@@ -422,7 +424,7 @@
         const y2AxisGenerator = d3.axisRight()
             .scale(y3Scale)
             .ticks(3)
-            .tickFormat(d => d * 10 + "%");
+            .tickFormat(d => d + "%");
 
         const y2Axis = bounds.append("g")
             .attr("class","axisLine")
@@ -433,7 +435,7 @@
             }px)`)
             .attr("font-family", "Arial")
             .attr("stroke-dasharray", "4px 4px")
-            .attr("opacity","0.5")
+            .attr("opacity","0.8")
             .attr("font-size", "8")
             .attr("text-align", "left")
 
@@ -510,7 +512,7 @@
                 }
 
                 if (show.checked == true ){
-                  right_axis.style.opacity = "0.5";
+                  right_axis.style.opacity = "0.8";
                   gridlines.style.opacity = "1";
                   area_2.style.opacity = "0.5";
                   dots.style.opacity = "0.6";
