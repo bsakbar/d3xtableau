@@ -42,7 +42,7 @@
             worksheetData.data.map(d => {
                     dataJson = {};
                     for (let i=0; i < cols.length; i++){
-                      if (cols[i].includes("AGG(4. VCR)")){
+                      if (cols[i].includes("AGG(4. VCR)") || cols[i].includes("SUM(4. VCR Fixed)")){
                         dataJson[cols[i]] = !isNaN(d[i].value) ? d[i].value : 0;
                       } else {
                       dataJson[cols[i]] = d[i].value;
@@ -69,6 +69,7 @@
                 var date = newArr[i]["Week Commencing"]
                 var video_type = newArr[i]["Video Type"]
                 var vcr = newArr[i]["AGG(4. VCR)"]
+                var vcr_avg = newArr[i]["SUM(4. VCR Fixed)"]
                 var video_plays = newArr[i]["SUM(Video Plays)"]
                 var partner = newArr[i]["Partner"]
                 var measured_impressions = newArr[i]["SUM(Measured Impressions)"]
@@ -78,12 +79,13 @@
                 if (video_date in sums) {
                     sums[video_date]['video_plays'] += video_plays
                     sums[video_date]['vcr'] += vcr
-
+                    sums[video_date]['vcr_avg'] += vcr_avg
 
 
                 } else {
                     sums[video_date] = {
                         "video_plays": video_plays,
+                        "vcr_avg": vcr_avg,
                         "vcr": vcr,
                         "video_type": video_type,
                         "date": date
@@ -99,8 +101,6 @@
 
                 console.log(trimmed_arr)
                 drawDotChart(sumsArr);
-
-
 
         });
 
@@ -157,6 +157,7 @@
         const xAccessor = d => dateParser(d.date)
         const yAccessor = d => d.video_plays
         const y2Accessor = d => d.vcr
+        const vcr_avg = d => d.vcr_avg
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const average_y2 = d =>d3.mean(arr, y2Accessor).toFixed(2);
 

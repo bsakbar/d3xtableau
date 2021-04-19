@@ -193,21 +193,6 @@
            dimensions.margin.top
          }px)`)
 
-         var defs = bounds.append("defs");
-
-    bounds.append("linearGradient")
-        .attr("id", "svgGradient")
-        .attr("x1", "0%").attr("y1", "0%")
-        .attr("x2", "100%").attr("y2", "0%")
-    .selectAll("stop")
-        .data([
-            {offset: "0%", color: "lightgrey"},
-            {offset: "50%", color: "lightgrey"},
-            {offset: "100%", color: "red"}
-        ])
-    .enter().append("stop")
-        .attr("offset", function(d) { return d.offset; })
-        .attr("stop-color", function(d) { return d.color; });
 
         const div = d3.select("body").append("div")
             .attr("class", "tooltip")
@@ -234,7 +219,7 @@
             // .nice()
 
         const y3Scale = d3.scaleLinear()
-            .domain([0, 10])
+            .domain(d3.extent(arr, view_rate))
             .range([dimensions.boundedHeight, 0])
             // .nice()
 

@@ -1,7 +1,7 @@
 body{
   background-color: #f5f2ee;
   /* background-color: #1B2326; */
-  overflow: hidden;
+  /* overflow: hidden; */
 
 }
 
@@ -30,6 +30,7 @@ div.DTS div.dataTables_scrollBody {
 }
 
 .sheet_name {
+    width:max-content;
     background-color: #f5f2ee;
     font-size: 22px;
     font-family: "League Gothic";
@@ -41,33 +42,35 @@ div.DTS div.dataTables_scrollBody {
     display: flex;
 }
 
-.legends{
-  display: flex;
-  margin-top:10px;
+.legend_container{
+  position: absolute;
+  margin-top: -25px;
+  margin-left: 250px;
+ 
 }
+
 .legend_header{
   width: max-content;
-  display: flex;
+  position: absolute;
   letter-spacing: -0.5px;
   color: #1B2326;
   font-family: "Arial";
-  font-size: 12px;
-  margin-top:-2px;
+  font-size: 12px; 
+  margin-top: -25px;
+  margin-left: 140px;
 }
-.legend_name{
+
+
+.legend_label{
   width:max-content;
-  position: absolute;
-  display: flex;
+  position: relative;
+  display: inline-flex;
   letter-spacing: -0.5px;
-  color: #1B2326;
   font-weight: bold;
   font-family: "Arial";
   font-size: 10px;
-  margin-left:85px;
-
+  margin-left:20px;
 }
-
-
 
 .container,
 .container2,
@@ -102,7 +105,7 @@ div.DTS div.dataTables_scrollBody {
   left: 0;
   height: 10px;
   width: 10px;
-  background-color: #eee;
+  background-color: lightgrey;
 }
 
 /* When the checkbox is checked, add a blue background */

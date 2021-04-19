@@ -62,8 +62,8 @@
                     newArr.push(dataJson);
                 }
 
-
             });
+            console.log(newArr)
 
             let sums = {};
             let i;
