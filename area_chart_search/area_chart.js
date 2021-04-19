@@ -160,13 +160,7 @@
             tableau.TableauEventType.FilterChanged, marksSelectedEventHandler);
     }
 
-    function saveSheetAndLoadSelectedMarks(worksheetName) {
-        tableau.extensions.settings.set('sheet', worksheetName);
-        tableau.extensions.settings.saveAsync();
-        loadSelectedMarks(worksheetName);
-        console.log('hi')
 
-    }
 
     function filterByColumn(columnIndex, fieldName) {
         const columnValues = demoHelpers.getValuesInColumn(columnIndex);
@@ -298,6 +292,7 @@
         // LEGEND // 
 
         var legends = d3.select("#legend")
+        .append("svg")
         
         var legend_keys = ["Google AdWords","Partner2", "Partner3"] 
 
@@ -311,11 +306,11 @@
         .enter()
         .append("rect")
             .attr("x",function(d, i){ return 10 + i * (dim + 5)})
-            .attr("y", 30) 
-            .attr("width", "10px")
-            .attr("height", "10px")
-            // .attr("class", "legend_container")
-            .style("fill", "red")
+            .attr("y", 10) 
+            .attr("width", dim)
+            .attr("height", dim)
+            .attr("class", "legend_container")
+            .style("fill",  d => legend_colorScale(d))
 
         legends.selectAll("labels")
         .data(legend_keys)

@@ -282,7 +282,7 @@
                 .duration(200)
                 .style("opacity", 0);
             d3.select(this)
-                .style("opacity", 0.9)
+                .style("opacity", 0.7)
         };
 
         function mouseOnCircle(d) {
