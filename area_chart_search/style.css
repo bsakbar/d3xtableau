@@ -1,7 +1,7 @@
 body{
   background-color: #f5f2ee;
   /* background-color: #1B2326; */
-  /* overflow: hidden; */
+  overflow: hidden;
 
 }
 
@@ -44,16 +44,25 @@ div.DTS div.dataTables_scrollBody {
 
 .legend_container{
   position: absolute;
-  margin-top: -25px;
-  margin-left: 250px;
- 
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: -30px;
+  margin-left: 230px;
 }
+/* 
+#legend{
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: -30px;
+  margin-left: 240px;
+}  */
 
 .legend_header{
   width: max-content;
   position: absolute;
   letter-spacing: -0.5px;
-  color: #1B2326;
+  color: #1b261c;
   font-family: "Arial";
   font-size: 12px; 
   margin-top: -25px;
@@ -62,14 +71,14 @@ div.DTS div.dataTables_scrollBody {
 
 
 .legend_label{
-  width:max-content;
+  /* width:max-content;
   position: relative;
-  display: inline-flex;
+  display: inline-flex; */
   letter-spacing: -0.5px;
   font-weight: bold;
   font-family: "Arial";
   font-size: 10px;
-  margin-left:20px;
+  /* margin-left:20px; */
 }
 
 .container,

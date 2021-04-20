@@ -211,7 +211,7 @@
         const partners = d => d.partner
         const capitalizeFirstLetter = d => d.charAt(0).toUpperCase() + d.slice(1);
 
-       var colors = ["#5EC7EB","#4e79a7","#FF8500","#DAF7A6"];
+       var colors = ["#5EC7EB","#4e79a7","#d93251","#43beb8"];
 
         //add limit to partner paths
         // condense WET code
@@ -292,35 +292,68 @@
         // LEGEND // 
 
         var legends = d3.select("#legend")
-        .append("svg")
+        .append("div")
+        .attr("class", "legend_container")
+        .attr("width", dimensions.width)
+        .attr("height", dimensions.height)
+
+        var legend_div = legends.append("svg")
         
-        var legend_keys = ["Google AdWords","Partner2", "Partner3"] 
+        var legend_keys = partnersArr
 
         var legend_colorScale = d3.scaleOrdinal()
         .domain(legend_keys)
         .range(colors)
 
+        var txt_width_so_far = 0
+        var txt_width = [0];
+        for ( let i=0 ; i < legend_keys.length ; i++){
+            let c = legend_keys[i].length
+            txt_width_so_far += c + 2
+            txt_width.push(txt_width_so_far)
+        }
+
+        console.log(txt_width)
+
+        // var legend_key_length = Math.max(...txt_width) + 2
+
+        // var label_position = d3.scaleOrdinal()
+        // .domain(legend_keys)
+        // .range(max_txt)
+
         let dim = 10
-        legends.selectAll("keys")
+        legend_div.selectAll("keys")
         .data(legend_keys)
         .enter()
         .append("rect")
-            .attr("x",function(d, i){ return 10 + i * (dim + 5)})
+            .attr("x",function(d, i){ return 25 + txt_width[i]* 6.5})
             .attr("y", 10) 
             .attr("width", dim)
             .attr("height", dim)
             .attr("class", "legend_container")
             .style("fill",  d => legend_colorScale(d))
 
-        legends.selectAll("labels")
+        legend_div.selectAll("labels")
         .data(legend_keys)
         .enter()
         .append("text")
-            .style("fill", d => legend_colorScale(d))
-            .text(function(d){ return d})
+        .attr("y", 19)
+        .attr("x",function(d, i){ return 38 + txt_width[i] * 6.5})
+            .style("fill", "#1b261c")
+            .text(function(d){ return d})    
             .attr("text-anchor", "left")
             .attr("class", "legend_label")
-            // .style("alignment-baseline", "middle")
+
+        legend_div.selectAll("rect")
+        // .on("click", click_legend)
+
+        function click_legend(){
+            area.transition()
+                .duration(400)
+                .style("opacity", 0);
+            d3.select(this)
+                .style("opacity", 1)
+        }
 
         const wrapper = d3.select("#wrapper")
             .append("svg")
@@ -334,9 +367,6 @@
            dimensions.margin.top
          }px)`)
 
-
-// console.log('area_chart_elem',area_chart_elem[0])
-// console.log('arr',arr)
 
         const div = d3.select("body").append("div")
             .attr("class", "tooltip")
