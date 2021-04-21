@@ -198,6 +198,7 @@
                 }
             }
        }
+       
 
         const dateParser = d3.timeParse("%Y-%m-%d")
         const formatDate = d3.timeFormat("%b %-d, %Y")
@@ -213,12 +214,10 @@
 
        var colors = ["#5EC7EB","#4e79a7","#d93251","#43beb8"];
 
-        //add limit to partner paths
+        
         // condense WET code
-        // I need an array for each partner with impressions, ctr and clicks values
-       
-     
 
+      
         // if (document.querySelector('input[name="check"]')) {
         //   document.querySelectorAll('input[name="check"]').forEach((elem) => {
         //     elem.addEventListener("change", function() {
@@ -298,6 +297,8 @@
         .attr("height", dimensions.height)
 
         var legend_div = legends.append("svg")
+        .attr("width", dimensions.width)
+        .attr("height", "30px")
         
         var legend_keys = partnersArr
 
@@ -314,12 +315,6 @@
         }
 
         console.log(txt_width)
-
-        // var legend_key_length = Math.max(...txt_width) + 2
-
-        // var label_position = d3.scaleOrdinal()
-        // .domain(legend_keys)
-        // .range(max_txt)
 
         let dim = 10
         legend_div.selectAll("keys")
@@ -367,6 +362,7 @@
            dimensions.margin.top
          }px)`)
 
+         console.log(area_chart_elem)
 
         const div = d3.select("body").append("div")
             .attr("class", "tooltip")
@@ -479,12 +475,12 @@
             .attr("x", 0)
             .attr("y", 0);
 
-        var brush = d3.brushX()
-            .extent([
-                [0, 0],
-                [dimensions.boundedWidth, dimensions.boundedHeight]
-            ])
-            .on("end", updateChart)
+        // var brush = d3.brushX()
+        //     .extent([
+        //         [0, 0],
+        //         [dimensions.boundedWidth, dimensions.boundedHeight]
+        //     ])
+        //     .on("end", updateChart)
 
         var area = bounds.append("g")
             .attr("class","areas")
@@ -516,7 +512,8 @@
         .range(colors)
 
         // loop through area chart elem array to create a path for every partners
-    for ( let i = 0; i < area_chart_elem.length; i++){     
+    for ( let i = 0; i < area_chart_elem.length; i++){  
+        // console.log(area_chart_elem[i])   
         area.append("path")
             .datum(area_chart_elem[i])
             .transition()
@@ -532,9 +529,9 @@
     }
 
         area
-        .append("g")
-        .attr("class", "brush")
-        .call(brush);
+        .append("g");
+        // .attr("class", "brush")
+        // .call(brush);
 
     
         //  area.selectAll("line")
@@ -560,27 +557,27 @@
             .y(d => y2Scale(y2Accessor(d)))
             .curve(curve2)
 
-        // area.append("path")
-        //     .data(arr)
-        //     .attr("class", "ctrLine")
-        //     .attr("fill", 'none')
-        //     .attr("stroke-width","0.4px")
-        //     .attr("stroke", "#1B2326")
-        //     .attr("opacity", 0.7)
-        //     .attr("d", line1(arr))
+        area.append("path")
+            .data(area_chart_elem[0])
+            .attr("class", "ctrLine")
+            .attr("fill", 'none')
+            .attr("stroke-width","0.4px")
+            .attr("stroke", "#1B2326")
+            .attr("opacity", 0.7)
+            .attr("d", line1(area_chart_elem[0]))
 
 
-        // area.selectAll("circle")
-        //    .data(arr)
-        //    .enter()
-        //    .append("circle")
-        //    .attr("class", "endPoints")
-        //    .attr("fill", "#1B2326")
-        //    .style("opacity", 0.3)
-        //    .attr("stroke", "none")
-        //    .attr("cx", d => xScale(xAccessor(d)))
-        //    .attr("cy", d => y2Scale(y2Accessor(d)))
-        //    .attr("r", d => b_sizze(clicks(d)))
+        area.selectAll("circle")
+           .data(area_chart_elem[0])
+           .enter()
+           .append("circle")
+           .attr("class", "endPoints")
+           .attr("fill", "#1B2326")
+           .style("opacity", 0.3)
+           .attr("stroke", "none")
+           .attr("cx", d => xScale(xAccessor(d)))
+           .attr("cy", d => y2Scale(y2Accessor(d)))
+           .attr("r", d => b_sizze(clicks(d)))
 
         area.selectAll("circle")
             .on("mouseover", mouseOn)

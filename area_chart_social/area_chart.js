@@ -8,7 +8,9 @@
         tableau.extensions.initializeAsync().then(function() {
             // worksheet we're reading data from
             const savedSheetName = "D3 DATA (2)"
-            loadSelectedMarks(savedSheetName);
+            const search_data_sheet = "FB Performance by Partner"
+
+            loadSelectedMarks(savedSheetName, search_data_sheet);
 
         }, function(err) {
             // Something went wrong in initialization.
@@ -17,32 +19,50 @@
     });
 
 
-    function loadSelectedMarks(worksheetName) {
+    function loadSelectedMarks(worksheetName, search_data) {
         if (removeEventListener) {
             removeEventListener();
         }
 
         const worksheet = demoHelpers.getSelectedSheet(worksheetName);
+        const worksheet_2 = demoHelpers.getSelectedSheet(search_data);
+
         const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
         for (let i = 0; i < worksheets.length; i++) {
             console.log(worksheets[i].name)
         }
+
+        var unique_partners = [];
+        worksheet_2.getSummaryDataAsync().then(function(sumdata) {
+           const worksheetData = sumdata.data;
+           for ( let i=0; i < worksheetData.length;i++){
+               let partner_name = worksheetData[i][0].value
+               if (unique_partners.includes(partner_name)){
+                   return null
+               } else {
+                   unique_partners.push(partner_name)
+               }
+           }
+          return null 
+       });
+        console.log('search array', unique_partners)
+
         // This function gets the summary data table for the selected worksheet
         worksheet.getSummaryDataAsync().then(function(sumdata) {
             const worksheetData = sumdata;
+            var cols = [];
 
             console.log(worksheetData)
-
-            let newArr = [];
-            var dataJson;
-            var cols = [];
 
             // create an array of data columns to gather fieldnames
             worksheetData.columns.map(d => {
                 cols.push(d.fieldName);
             })
-            console.log(cols)
+            
 
+            let newArr = [];
+            let dataJson;
+            let partnerList = {}
             worksheetData.data.map(d => {
                 dataJson = {};
                 // Some values are null or NaN, so we give them a 0 value
@@ -55,15 +75,31 @@
                 }
 
                 // Filter down partners to the ones we want to show in the chart
-                if (dataJson['Partner'] == ['facebook'] ||
-                    dataJson['Partner'] == ['instagram'] ||
-                    dataJson['Partner'] == ['unknown'] ||
-                    dataJson['Partner'] == ['Hearst Corp']) {
-                    newArr.push(dataJson);
-                }
+                 newArr.push(dataJson)     
+                   if (dataJson['Partner'] in partnerList) {
+                       return 'none'
+                   }   else {
+                       partnerList[dataJson['Partner']] = 0
+                   }
 
             });
             console.log(newArr)
+
+            let partners = [];
+            console.log('partner list yaya!!!', partnerList)
+            for (const [key, value] of Object.entries(partnerList))
+                partners.push(key)
+ 
+             let filtered_partners = [];
+                for ( let i=0; i < unique_partners.length;i++){
+                 if (partners.includes(unique_partners[i])){
+                     filtered_partners.push(unique_partners[i])
+                 } else {
+                     console.log('no match')
+                 }
+             }
+
+            console.log('filtered_partners',filtered_partners)
 
             let sums = {};
             let i;
@@ -113,7 +149,7 @@
 
             console.log(sumsArr)
             // calling the function that draws the chart
-            drawDotChart(sumsArr);
+            drawDotChart(sumsArr, filtered_partners);
 
 
         });
@@ -161,7 +197,7 @@
     }
 
     // drawing the chart in d3js
-    function drawDotChart(arr) {
+    function drawDotChart(arr, partnersArr) {
         $('#wrapper').empty();
 
         // Date (xAxis)
@@ -177,75 +213,38 @@
         // formatting numbers
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         // Average engagement rate line
-        const average_y2 = d => d3.mean(arr, y2Accessor).toFixed(2);
+        const average_y2 = d => d3.mean(filtered_arr, y2Accessor).toFixed(2);
         const capitalizeFirstLetter = d => d.charAt(0).toUpperCase() + d.slice(1)
+        var colors = ["#5EC7EB","#4e79a7","#d93251","#43beb8"];
 
-        // Since we want to show 4 seperate areas, each partner will have its own array
-        var arr_1 = []
-        var arr_2 = []
-        var arr_3 = []
-        var arr_4 = []
-        for (var i = 0; i < arr.length; i++) {
-            if (arr[i].partner == 'facebook') {
-                arr_1.push(arr[i])
-            } else if (arr[i].partner == 'instagram') {
-                arr_2.push(arr[i])
-            } else if (arr[i].partner == 'Hearst Corp') {
-                arr_3.push(arr[i])
-            } else if (arr[i].partner == 'unknown') {
-                arr_4.push(arr[i])
+        
+        var area_chart_elem = []
+        for (let j=0; j < partnersArr.length ; j++){
+            area_chart_elem.push([])
+        }
+        console.log('area_chart_elem',area_chart_elem)
+
+       for ( let i=0; i < arr.length ; i++){
+           for (let j=0; j < partnersArr.length ; j++){
+                if (arr[i].partner == partnersArr[j] ){
+                    area_chart_elem[j].push(arr[i])
+                }
             }
-        }
+       }
 
+       var filtered_arr = []
+       for ( let i=0; i < arr.length ; i++){
+        for (let j=0; j < partnersArr.length ; j++){
+             if (arr[i].partner == partnersArr[j] ){
+                filtered_arr.push(arr[i])
+             }
+         }
+    }
 
-        // Legend work as checkboxes too, here we conect html input tags with the chart using an event listener
-        if (document.querySelector('input[name="check"]')) {
-            document.querySelectorAll('input[name="check"]').forEach((elem) => {
-                elem.addEventListener("change", function() {
-                    var check_1 = document.getElementById("check_1");
-                    var check_2 = document.getElementById("check_2");
-                    var check_3 = document.getElementById("check_3");
-                    var check_4 = document.getElementById("check_4");
-                    var area1 = document.getElementById("area1");
-                    var area2 = document.getElementById("area2");
-                    var area3 = document.getElementById("area3");
-                    var area4 = document.getElementById("area4");
+       console.log('arr', arr)
+   
 
-                    if (check_1.checked == false) {
-                        area1.style.opacity = "0";
-                        area1.style.transition = "opacity .7s linear";
-                    }
-                    if (check_2.checked == false) {
-                        area2.style.opacity = "0";
-                        area2.style.transition = "opacity .7s linear";
-
-                    }
-                    if (check_3.checked == false) {
-                        area3.style.opacity = "0";
-                        area3.style.transition = "opacity .7s linear";
-
-                    }
-                    if (check_1.checked == true) {
-                        area1.style.opacity = ".9";
-                        area1.style.transition = "visibility 0s .7s, opacity .7s linear";
-                    }
-                    if (check_2.checked == true) {
-                        area2.style.opacity = ".9";
-                        area2.style.transition = "visibility 0s .7s, opacity .7s linear";
-                    }
-                    if (check_3.checked == true) {
-                        area3.style.opacity = ".9";
-                        area3.style.transition = "visibility 0s .7s, opacity .7s linear";
-                    }
-                    if (check_4.checked == true) {
-                        area4.style.opacity = ".9";
-                        area4.style.transition = "visibility 0s .7s, opacity .7s linear";
-                    }
-                });
-            });
-        }
-
-        // setting up chart dmension to make it responsive
+       // chart dimensions
         const width = d3.min([
             window.innerWidth * 0.95,
         ])
@@ -271,6 +270,59 @@
             dimensions.margin.top -
             dimensions.margin.bottom
 
+            
+        // LEGEND // 
+
+        var legends = d3.select("#legend")
+        .append("div")
+        .attr("class", "legend_container")
+        .attr("width", dimensions.width)
+        .attr("height", dimensions.height)
+
+        var legend_div = legends.append("svg")
+        .attr("width", dimensions.width)
+        .attr("height", "30px")
+
+        var legend_keys = partnersArr
+
+        var legend_colorScale = d3.scaleOrdinal()
+        .domain(legend_keys)
+        .range(colors)
+
+        var txt_width_so_far = 0
+        var txt_width = [0];
+        for ( let i=0 ; i < legend_keys.length ; i++){
+            let c = legend_keys[i].length
+            txt_width_so_far += c + 2
+            txt_width.push(txt_width_so_far)
+        }
+
+
+        let dim = 10
+        legend_div.selectAll("keys")
+        .data(legend_keys)
+        .enter()
+        .append("rect")
+            .attr("x",function(d, i){ return 25 + txt_width[i]* 6})
+            .attr("y", 10) 
+            .attr("width", dim)
+            .attr("height", dim)
+            .attr("class", "legend_container")
+            .style("fill",  d => legend_colorScale(d))
+
+        legend_div.selectAll("labels")
+        .data(legend_keys)
+        .enter()
+        .append("text")
+        .attr("y", 19)
+        .attr("x",function(d, i){ return 38 + txt_width[i] * 6})
+            .style("fill", "#1b261c")
+            .text(function(d){ return capitalizeFirstLetter(d)})    
+            .attr("text-anchor", "left")
+            .attr("class", "legend_label")
+
+
+        
         // first space we create is an svg element
         const wrapper = d3.select("#wrapper")
             .append("svg")
@@ -295,16 +347,16 @@
         // here we're mapping data values into the chart's width
 
         const xScale = d3.scaleTime()
-            .domain(d3.extent(arr, xAccessor))
+            .domain(d3.extent(filtered_arr, xAccessor))
             .range([0, dimensions.boundedWidth])
 
         const yScale = d3.scaleLinear()
-            .domain(d3.extent(arr, yAccessor))
+            .domain(d3.extent(filtered_arr, yAccessor))
             .range([dimensions.boundedHeight, 0])
             .nice()
 
         const y2Scale = d3.scaleLinear()
-            .domain(d3.extent(arr, y2Accessor))
+            .domain(d3.extent(filtered_arr, y2Accessor))
             .range([dimensions.boundedHeight, 0])
 
 
@@ -397,54 +449,43 @@
         const curve = d3.curveLinear
 
         // First area (partner)
-        const path1 = d3.area()
+        const mainPath = d3.area()
             .x(d => xScale(xAccessor(d)))
             .y0(yScale(0))
             .y1(d => yScale(yAccessor(d)))
             .curve(curve)
 
-        // appending path to draw the area charset
-        // transition and duration animate the path in and out
-        area.append("path")
-            .datum(arr_1)
-            .transition()
-            .duration(300)
-            .attr("opacity", 0)
-            .attr("id", "area1")
-            .attr("class", "area1")
-            .transition()
-            .duration(900)
-            .attr("fill", "#5EC7EB")
-            .attr("opacity", .9)
-            .attr("d", path1)
-
-        area
-            .append("g")
-            .attr("class", "brush")
-            .call(brush);
-
-        const path2 = d3.area()
-            .x(d => xScale(xAccessor(d)))
-            .y0(yScale(0))
-            .y1(d => yScale(yAccessor(d)))
-            .curve(curve)
-
-        area.append("path")
-            .datum(arr_2)
-            .transition()
-            .duration(600)
-            .attr("opacity", 0)
-            .attr("id", "area2")
-            .attr("class", "area2")
-            .transition()
-            .duration(800)
-            .attr("fill", "#4e79a7")
-            .attr("opacity", .9)
-            .attr("d", path2)
+            let area_ids = []
+            let area_id;
+            for (let i = 0; i < area_chart_elem.length; i++){
+                area_id = "area_" + i
+                area_ids.push(area_id)
+            }
+    
+            var chart_colorScale = d3.scaleOrdinal()
+            .domain(area_chart_elem)
+            .range(colors)
+       
+         // loop through area chart elem array to create a path for every partner
+        for ( let i = 0; i < area_chart_elem.length; i++){ 
+            console.log(area_chart_elem[i])
+            area.append("path")
+                .datum(area_chart_elem[i])
+                .transition()
+                .duration(800)
+                .attr("opacity",0)
+                .attr("id", area_ids[i])
+                .attr("class", "areaGroup")
+                .transition()
+                .duration(800)
+                .attr("fill", chart_colorScale)
+                .attr("opacity", 0.8)
+                .attr("d", mainPath)     
+    }
 
         // when mouse is on a path, show a line with a bubble of the data point
         area.selectAll("line")
-            .data(arr)
+            .data(filtered_arr)
             .enter()
             .append("line")
             .attr("stroke", "#1b2326")
@@ -459,43 +500,6 @@
             .on("mouseover", mouseOnLine)
             .on("mouseout", mouseOutLine);
 
-        const path3 = d3.area()
-            .x(d => xScale(xAccessor(d)))
-            .y0(yScale(0))
-            .y1(d => yScale(yAccessor(d)))
-            .curve(curve)
-
-        area.append("path")
-            .datum(arr_3)
-            .transition()
-            .duration(800)
-            .attr("opacity", 0)
-            .attr("id", "area3")
-            .attr("class", "area3")
-            .transition()
-            .duration(800)
-            .attr("fill", '#FF8500')
-            .attr("opacity", 0.8)
-            .attr("d", path3)
-
-        const path4 = d3.area()
-            .x(d => xScale(xAccessor(d)))
-            .y0(yScale(0))
-            .y1(d => yScale(yAccessor(d)))
-            .curve(curve)
-
-        area.append("path")
-            .datum(arr_4)
-            .transition()
-            .duration(800)
-            .attr("opacity", 0)
-            .attr("id", "area4")
-            .attr("class", "area4")
-            .transition()
-            .duration(800)
-            .attr("fill", '#DAF7A6')
-            .attr("opacity", 0.8)
-            .attr("d", path4)
 
 
         // Right axis line chart
@@ -508,13 +512,13 @@
 
         // passing arr because we want to show the engagement rate of all 4 partners
         area.append("path")
-            .data(arr)
+            .data(filtered_arr)
             .attr("class", "ctrLine")
             .attr("fill", 'none')
             .attr("stroke-width", "1px")
             .attr("stroke", "#1B2326")
             .attr("opacity", 0.7)
-            .attr("d", line1(arr))
+            .attr("d", line1(filtered_arr))
 
         // Engagement rate average line
         const avgLine_y = bounds.append("line")
@@ -540,7 +544,7 @@
             .append("g")
         avgLabel_y_2
             .selectAll("text")
-            .data(arr)
+            .data(filtered_arr)
             .enter()
             .append("text")
             .text(d => (average_y2(d) * 10).toFixed(1) + "%")
