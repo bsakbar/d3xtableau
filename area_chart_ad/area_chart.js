@@ -272,7 +272,7 @@
                 .style("opacity", 0.9)
             d3.select(this)
                 .style("opacity", 1)
-                div.html("Measured Impressions: " + add_commas(Math.round(d.measured_imp)) + "</br>" + "Viewable Impressions: " + add_commas(Math.round(d.view_imp)))
+                div.html("Measured Impressions: " + add_commas(Math.round(d.measured_imp)) + "</br>" + "Viewable Impressions: " + add_commas(Math.round(d.view_imp)  + "</br>" + "Date: " + d.date))
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };

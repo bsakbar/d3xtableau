@@ -27,6 +27,8 @@
         const worksheet = demoHelpers.getSelectedSheet(worksheetName);
         const worksheet_2 = demoHelpers.getSelectedSheet(search_data);
 
+        console.log(worksheet_2)
+
         const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
         for (let i = 0; i < worksheets.length; i++) {
             console.log(worksheets[i].name)
@@ -215,8 +217,8 @@
         // Average engagement rate line
         const average_y2 = d => d3.mean(filtered_arr, y2Accessor).toFixed(2);
         const capitalizeFirstLetter = d => d.charAt(0).toUpperCase() + d.slice(1)
-        var colors = ["#5EC7EB","#4e79a7","#d93251","#43beb8"];
-
+        var colors = ["#A3294A","#4e79a7","#5EC7EB","#3F7F91"];
+        
         
         var area_chart_elem = []
         for (let j=0; j < partnersArr.length ; j++){
@@ -228,9 +230,11 @@
            for (let j=0; j < partnersArr.length ; j++){
                 if (arr[i].partner == partnersArr[j] ){
                     area_chart_elem[j].push(arr[i])
+                 
                 }
             }
        }
+       
 
        var filtered_arr = []
        for ( let i=0; i < arr.length ; i++){
@@ -283,6 +287,8 @@
         .attr("width", dimensions.width)
         .attr("height", "30px")
 
+
+
         var legend_keys = partnersArr
 
         var legend_colorScale = d3.scaleOrdinal()
@@ -296,6 +302,7 @@
             txt_width_so_far += c + 2
             txt_width.push(txt_width_so_far)
         }
+     
 
 
         let dim = 10
@@ -409,7 +416,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.3)
-            div.html("Partner: " + capitalizeFirstLetter(d.partner) + "<br/>" + "Impressions: " + add_commas(d.impressions))
+            div.html("Partner: " + capitalizeFirstLetter(d.partner) + "<br/>" + "Impressions: " + add_commas(d.impressions) + "</br>" + "Engagement Rate: " + d.eng_rate.toFixed(2)*10 + "%" + "</br>" + "Date: " + d.date)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -461,14 +468,35 @@
                 area_id = "area_" + i
                 area_ids.push(area_id)
             }
-    
+            
+            const taint = d3.scaleOrdinal(colors, area_chart_elem)
+            const invert = d3.scaleOrdinal(taint.range(), taint.domain())
+
+            var color_arr = []
+            for ( let i = 0; i < area_chart_elem.length; i++){        
+                let c = invert(area_chart_elem[i])
+                color_arr.push(c)
+            }
+            console.log(color_arr)
+
             var chart_colorScale = d3.scaleOrdinal()
             .domain(area_chart_elem)
             .range(colors)
-       
-         // loop through area chart elem array to create a path for every partner
+
+
+         // this is temporary //  
+        var facebook_index = [] 
         for ( let i = 0; i < area_chart_elem.length; i++){ 
-            console.log(area_chart_elem[i])
+            if (area_chart_elem[i][0].partner == "facebook" ){
+                facebook_index = i
+            }
+        }
+        var facebook_arr_length = area_chart_elem[facebook_index].length
+        area_chart_elem[facebook_index].push({"impressions": 0, "ctr": 0, "clicks": 0, "eng_rate": 0, "partner": "facebook", "date": area_chart_elem[facebook_index][facebook_arr_length -1 ]['date']})
+        /////////////////////////
+    
+         // loop through area chart elem array to create a path for every partner
+        for ( let i = 0; i < area_chart_elem.length; i++){        
             area.append("path")
                 .datum(area_chart_elem[i])
                 .transition()
@@ -480,16 +508,16 @@
                 .duration(800)
                 .attr("fill", chart_colorScale)
                 .attr("opacity", 0.8)
-                .attr("d", mainPath)     
-    }
+                .attr("d", mainPath)          
+        }
 
-        // when mouse is on a path, show a line with a bubble of the data point
+   
         area.selectAll("line")
             .data(filtered_arr)
             .enter()
             .append("line")
             .attr("stroke", "#1b2326")
-            .attr("stroke-width", "1px")
+            .attr("stroke-width", "2px")
             .style("opacity", 0)
             .attr("x1", d => xScale(xAccessor(d)))
             .attr("y1", d => yScale(yAccessor(d)))

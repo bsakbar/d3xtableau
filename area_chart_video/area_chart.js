@@ -394,7 +394,7 @@
           .attr("class", "area3")
           .transition()
           .duration(800)
-          .attr("fill", "#d93251")
+          .attr("fill", "#A3294A")
           .attr("opacity", .9)
           .attr("d", path3)
 

@@ -7,8 +7,8 @@
     $(document).ready(function() {
         tableau.extensions.initializeAsync().then(function() {
             const savedSheetName = "D3 DATA (2)"
-            // const savedSheetName = 'Partner Display Performance'
-            loadSelectedMarks(savedSheetName);
+            const search_data_sheet = "Impressions vs CTR " 
+            loadSelectedMarks(savedSheetName, search_data_sheet);
 
         }, function(err) {
             // Something went wrong in initialization.
@@ -17,30 +17,52 @@
     });
 
 
-    function loadSelectedMarks(worksheetName) {
+    function loadSelectedMarks(worksheetName, search_data) {
         if (removeEventListener) {
             removeEventListener();
         }
 
         const worksheet = demoHelpers.getSelectedSheet(worksheetName);
+        const worksheet_2 = demoHelpers.getSelectedSheet(search_data);
+
+        console.log(worksheet_2)
+
         const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
-         for (let i=0; i < worksheets.length; i++){
-           console.log(worksheets[i].name)
-         }
-         worksheet.getSummaryDataAsync().then(function(sumdata) {
-             const worksheetData = sumdata;
-             console.log(worksheetData)
+        for (let i = 0; i < worksheets.length; i++) {
+            console.log(worksheets[i].name)
+        }
+         
+        var unique_partners = [];
+        worksheet_2.getSummaryDataAsync().then(function(sumdata) {
+           const worksheetData = sumdata.data;
+           for ( let i=0; i < worksheetData.length;i++){
+               let partner_name = worksheetData[i][0].value
+               if (unique_partners.includes(partner_name)){
+                   return null
+               } else {
+                   unique_partners.push(partner_name)
+               }
+           }
+          return null 
+       });
+        console.log('search array', unique_partners)
 
-             let newArr = [];
-             var dataJson;
-             var cols = [];
-             worksheetData.columns.map(d => {
-               cols.push(d.fieldName);
-             })
-             console.log(cols)
+        worksheet.getSummaryDataAsync().then(function(sumdata) {
+            const worksheetData = sumdata;
+            var cols = [];
 
-             worksheetData.data.map(d => {
-                     dataJson = {};
+            console.log(worksheetData)
+
+            // create an array of data columns to gather fieldnames
+            worksheetData.columns.map(d => {
+                cols.push(d.fieldName);
+            })
+            
+            let newArr = [];
+            let dataJson;
+            let partnerList = {}
+            worksheetData.data.map(d => {
+                dataJson = {};
                      for (let i=0; i < cols.length; i++){
                        if (cols[i].includes("AGG(4. VCR)")){
                          dataJson[cols[i]] = !isNaN(d[i].value) ? d[i].value : 0;
@@ -49,19 +71,28 @@
                        }
                      }
 
-                     newArr.push(dataJson);
-
-                     // if (dataJson['Campaign'].includes("Display") || dataJson['Campaign'].includes("DISPLAY")){
-                     //   newArr.push(dataJson);
-                     //
-                     // }
-
-
-
+                newArr.push(dataJson)     
+                   if (dataJson['Partner'] in partnerList) {
+                       return 'none'
+                   }   else {
+                       partnerList[dataJson['Partner']] = 0
+                   }
 
              });
 
-
+             let partners = [];
+             for (const [key, value] of Object.entries(partnerList))
+                 partners.push(key)
+  
+              let filtered_partners = [];
+                 for ( let i=0; i < unique_partners.length;i++){
+                  if (partners.includes(unique_partners[i])){
+                      filtered_partners.push(unique_partners[i])
+                  } else {
+                      console.log('no match')
+                  }
+              }
+ 
 
              let sums = {};
              let i;
@@ -103,7 +134,7 @@
 
             sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
             console.log(sumsArr)
-            drawDotChart(sumsArr);
+            drawDotChart(sumsArr, filtered_partners);
 
 
         });
@@ -152,7 +183,7 @@
     }
 
 
-    function drawDotChart(arr) {
+    function drawDotChart(arr, partnersArr) {
         $('#wrapper').empty();
         const dateParser = d3.utcParse("%Y-%m-%d")
         const formatDate = d3.timeFormat("%b %-d, %Y")
@@ -164,17 +195,26 @@
         const clicks = d => d.clicks
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         const client = d => d.client
-        var average_y2 = d3.mean(arr, y2Accessor).toFixed(2);
 
-        // console.log(average_y2)
-
-
-        // for (let i=0; i < 5; i++){
-        //   console.log(Date.parse(arr[i].date))
-        //   console.log(dateParser(arr[i].date))
-        //   console.log(Date.parse(dateParser(arr[i].date)))
-        //
+        var area_chart_elem = []
+        // for (let j=0; j < partnersArr.length ; j++){
+        //     area_chart_elem.push([])
         // }
+        // console.log('area_chart_elem',area_chart_elem)
+
+       for ( let i=0; i < arr.length ; i++){
+           for (let j=0; j < partnersArr.length ; j++){
+                if (arr[i].partner == partnersArr[j] ){
+                    area_chart_elem.push(arr[i])
+                 
+                }
+            }
+       }
+
+       var average_y2 = d3.mean(area_chart_elem, y2Accessor).toFixed(2);
+
+
+       console.log(area_chart_elem)
 
 
         const width = d3.min([
@@ -221,22 +261,22 @@
             .style("opacity", 0);
 
         const xScale = d3.scaleUtc()
-            .domain(d3.extent(arr, xAccessor))
+            .domain(d3.extent(area_chart_elem, xAccessor))
             .range([0, dimensions.boundedWidth])
 
 
         const yScale = d3.scaleLinear()
-            .domain(d3.extent(arr, yAccessor))
+            .domain(d3.extent(area_chart_elem, yAccessor))
             .range([dimensions.boundedHeight, 0])
             .nice()
 
         const y2Scale = d3.scaleLinear()
-            .domain(d3.extent(arr, y2Accessor))
+            .domain(d3.extent(area_chart_elem, y2Accessor))
             .range([dimensions.boundedHeight, 0])
             // .nice()
 
         const b_sizze = d3.scaleLinear()
-            .domain(d3.extent(arr, clicks))
+            .domain(d3.extent(area_chart_elem, clicks))
             .range([2, 8])
 
 
@@ -306,8 +346,8 @@
         // }
 
         const color = d3.scaleOrdinal(
-          arr.conditions === undefined ? arr.map(d => d.ctr_perf) : arr.conditions,
-          arr.colors === undefined ? d3.schemeCategory10 : arr.colors
+            area_chart_elem.conditions === undefined ? area_chart_elem.map(d => d.ctr_perf) : area_chart_elem.conditions,
+            area_chart_elem.colors === undefined ? d3.schemeCategory10 : area_chart_elem.colors
         ).unknown("#1B2326")
 
         area.append("linearGradient")
@@ -316,7 +356,7 @@
         .attr("x1", 0)
         .attr("x2", dimensions.boundedWidth)
         .selectAll("stop")
-        .data(arr)
+        .data(area_chart_elem)
         .enter()
         .append("stop")
         .attr("offset", d => xScale(Date.parse(dateParser(d.date))) / dimensions.boundedWidth)
@@ -351,7 +391,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.3)
-            div.html("Client: " + d.client + "<br/>" + "Impressions: " + add_commas(d.impressions))
+            div.html("Client: " + d.client + "<br/>" + "Impressions: " + add_commas(d.impressions) + "</br>" + "CTR: " + Math.round(d.ctr) + "%" + "</br>" + "Date: " + d.date)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -383,7 +423,7 @@
 
 
         area.append("path")
-            .datum(arr)
+            .datum(area_chart_elem)
             .transition()
             .duration(300)
             .attr("opacity",0)
@@ -402,11 +442,12 @@
             .call(brush);
 
             area.selectAll("line")
-               .data(arr)
+               .data(area_chart_elem)
                .enter()
                .append("line")
                .attr("stroke","#1b2326")
                .style("opacity",0)
+               .attr("stroke-width","2px")
                .attr("x1", d => xScale(xAccessor(d)))
                .attr("y1", d => yScale(yAccessor(d)))
                .attr("x2",d => xScale(xAccessor(d)))
@@ -450,12 +491,12 @@
 
 
         area.append("path")
-            .data(arr)
+            .data(area_chart_elem)
             .attr("class", "ctrLine")
             .attr("fill", 'none')
             .attr("stroke-width","2px")
             .attr("stroke", "url(#colorId)")
-            .attr("d", line1(arr))
+            .attr("d", line1(area_chart_elem))
         //
         //
         // area.selectAll("circle")
@@ -519,7 +560,7 @@
             .append("g")
         avgLabel_y_2
             .selectAll("text")
-            .data(arr)
+            .data(area_chart_elem)
             .enter()
             .append("text")
             .text(d => Math.round(average_y2) + "%")
@@ -567,13 +608,13 @@
                 .select('.ctrLine')
                 .transition()
                 .duration(1000)
-                .attr("d", line1(arr))
+                .attr("d", line1(area_chart_elem))
 
 
         }
 
         bounds.on("dblclick", function() {
-            xScale.domain(d3.extent(arr, xAccessor))
+            xScale.domain(d3.extent(area_chart_elem, xAccessor))
             xAxis.transition().call(d3.axisBottom(xScale)
             .ticks(5)
             .tickFormat(formatDate))
@@ -585,7 +626,7 @@
             area
                 .select('.ctrLine')
                 .transition()
-                .attr("d", line1(arr))
+                .attr("d", line1(area_chart_elem))
 
 
         });

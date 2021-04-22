@@ -434,7 +434,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.7)
-            div.html("Impressions: " + add_commas(d.impressions) + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%" + "<br/>" + "Clicks: " + add_commas(d.clicks))
+            div.html("Impressions: " + add_commas(d.impressions) + "<br/>" + "CTR: " + (d.ctr*10).toFixed(1) + "%" + "<br/>" + "Clicks: " + add_commas(d.clicks) + "</br>" + "Date: " + d.date)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -453,7 +453,7 @@
                 .style("opacity", 0.95)
             d3.select(this)
                 .style("opacity", 0.3)
-            div.html("Partner: " + capitalizeFirstLetter(d.partner)  + "<br/>" + "Impressions: " + add_commas(d.impressions))
+            div.html("Partner: " + capitalizeFirstLetter(d.partner)  + "<br/>" + "Impressions: " + add_commas(d.impressions) + "</br>" + "CTR: " + Math.round(d.ctr) + "%" + "</br>" + "Date: " + d.date)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -534,21 +534,21 @@
         // .call(brush);
 
     
-        //  area.selectAll("line")
-        //     .data(arr)
-        //     .enter()
-        //     .append("line")
-        //     .attr("stroke-width", "2px")
-        //     .attr("stroke","#1b2326")
-        //     .style("opacity",0)
-        //     .attr("x1", d => xScale(xAccessor(d)))
-        //     .attr("y1", d => yScale(yAccessor(d)))
-        //     .attr("x2",d => xScale(xAccessor(d)))
-        //     .attr("y2",dimensions.boundedHeight);
+         area.selectAll("line")
+            .data(area_chart_elem[0])
+            .enter()
+            .append("line")
+            .attr("stroke-width", "2px")
+            .attr("stroke","#1b2326")
+            .style("opacity",0)
+            .attr("x1", d => xScale(xAccessor(d)))
+            .attr("y1", d => yScale(yAccessor(d)))
+            .attr("x2",d => xScale(xAccessor(d)))
+            .attr("y2",dimensions.boundedHeight);
     
-        //  area.selectAll("line")
-        //      .on("mouseover", mouseOnLine)
-        //      .on("mouseout", mouseOutLine);
+         area.selectAll("line")
+             .on("mouseover", mouseOnLine)
+             .on("mouseout", mouseOutLine);
 
         const curve2 = d3.curveLinear
 
