@@ -7,8 +7,9 @@
     $(document).ready(function() {
         tableau.extensions.initializeAsync().then(function() {
             const savedSheetName = "D3 DATA (2)"
-            // const savedSheetName = 'Partner Display Performance'
-            loadSelectedMarks(savedSheetName);
+            const search_data_sheet = "Viewable Impressions vs In View Rate"
+
+            loadSelectedMarks(savedSheetName, search_data_sheet);
 
         }, function(err) {
             // Something went wrong in initialization.
@@ -17,16 +18,33 @@
     });
 
 
-    function loadSelectedMarks(worksheetName) {
+    function loadSelectedMarks(worksheetName, search_data) {
         if (removeEventListener) {
             removeEventListener();
         }
 
         const worksheet = demoHelpers.getSelectedSheet(worksheetName);
+        const worksheet_2 = demoHelpers.getSelectedSheet(search_data);
+
         const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
          for (let i=0; i < worksheets.length; i++){
            console.log(worksheets[i].name)
          }
+         var unique_partners = [];
+        worksheet_2.getSummaryDataAsync().then(function(sumdata) {
+           const worksheetData = sumdata.data;
+           for ( let i=0; i < worksheetData.length;i++){
+               let partner_name = worksheetData[i][0].value
+               if (unique_partners.includes(partner_name)){
+                   return null
+               } else {
+                   unique_partners.push(partner_name)
+               }
+           }
+          return null 
+       });
+        console.log('unique_partners', unique_partners)
+
          worksheet.getSummaryDataAsync().then(function(sumdata) {
              const worksheetData = sumdata;
              console.log(worksheetData)
@@ -34,6 +52,8 @@
              let newArr = [];
              var dataJson;
              var cols = [];
+            let partnerList = {}
+
              worksheetData.columns.map(d => {
                cols.push(d.fieldName);
              })
@@ -48,11 +68,28 @@
                        dataJson[cols[i]] = d[i].value;
                        }
                      }
-                     newArr.push(dataJson);
+                     newArr.push(dataJson)     
+                    if (dataJson['Partner'] in partnerList) {
+                        return 'none'
+                    }   else {
+                        partnerList[dataJson['Partner']] = 0
+                    }
 
 
              });
 
+             let partners = [];
+            for (const [key, value] of Object.entries(partnerList))
+                partners.push(key)
+ 
+             let filtered_partners = [];
+                for ( let i=0; i < unique_partners.length;i++){
+                 if (partners.includes(unique_partners[i])){
+                     filtered_partners.push(unique_partners[i])
+                 } else {
+                     console.log('no match')
+                 }
+             }
 
 
              let sums = {};
@@ -64,6 +101,7 @@
                  var measured_imp = newArr[i]["SUM(Measured Impressions)"]
                  var view_imp = newArr[i]["SUM(Viewable Impressions)"]
                  var view_rate = newArr[i]["AGG(In-View Rate)"]
+                 var partner = newArr[i]["Partner"]
 
                  // var measured_date = measured_imp + '_' + date
 
@@ -75,6 +113,7 @@
 
                 } else {
                     sums[date] = {
+                      "partner": partner,
                       "measured_imp": measured_imp,
                       "view_imp": view_imp,
                       "date": date,
@@ -90,9 +129,8 @@
 
             sumsArr.sort((a, b) => (a.date > b.date) ? 1 : -1)
 
-            var trimmed_arr = sumsArr.slice(51)
             console.log(sumsArr)
-            drawDotChart(sumsArr);
+            drawDotChart(sumsArr, filtered_partners);
 
 
         });
@@ -141,7 +179,7 @@
     }
 
 
-    function drawDotChart(arr) {
+    function drawDotChart(arr, partnersArr) {
         $('#wrapper').empty();
         const dateParser = d3.timeParse("%Y-%m-%d")
         const formatDate = d3.timeFormat("%b %-d, %Y")
@@ -151,10 +189,34 @@
         const yAccessor = d => d.measured_imp
         const y2Accessor = d => d.view_imp
         const view_rate = d => d.view_rate
-
         const add_commas = x => x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
+        var area_chart_elem = []
+        for (let j=0; j < partnersArr.length ; j++){
+            area_chart_elem.push([])
+        }
+        console.log('partnersArr',partnersArr)
+         
+      
+       for ( let i=0; i < arr.length ; i++){
+           for (let j=0; j < partnersArr.length ; j++){
+                if (arr[i].partner == partnersArr[j] ){
+                    area_chart_elem[j].push(arr[i])
+                 
+                }
+            }
+       }
+       
+       var filtered_arr = []
+       for ( let i=0; i < arr.length ; i++){
+        for (let j=0; j < partnersArr.length ; j++){
+             if (arr[i].partner == partnersArr[j] ){
+                filtered_arr.push(arr[i])
+             }
+         }
+        }
 
+        console.log(filtered_arr)
 
         const width = d3.min([
             window.innerWidth * 0.95,
@@ -200,7 +262,7 @@
 
 
             const xxScale = d3.scaleTime()
-                .domain(d3.extent(arr, xAccessor))
+                .domain(d3.extent(filtered_arr, xAccessor))
                 .range([0, dimensions.boundedWidth])
 
             const xScale = d3.scaleBand()
@@ -209,17 +271,17 @@
 
 
         const yScale = d3.scaleLinear()
-            .domain(d3.extent(arr, yAccessor))
+            .domain(d3.extent(filtered_arr, yAccessor))
             .range([dimensions.boundedHeight, 0])
             .nice()
 
         const y2Scale = d3.scaleLinear()
-            .domain(d3.extent(arr, y2Accessor))
+            .domain(d3.extent(filtered_arr, y2Accessor))
             .range([dimensions.boundedHeight, 0])
             // .nice()
 
         const y3Scale = d3.scaleLinear()
-            .domain(d3.extent(arr, view_rate))
+            .domain(d3.extent(filtered_arr, view_rate))
             .range([dimensions.boundedHeight, 0])
             // .nice()
 
@@ -272,7 +334,7 @@
                 .style("opacity", 0.9)
             d3.select(this)
                 .style("opacity", 1)
-                div.html("Measured Impressions: " + add_commas(Math.round(d.measured_imp)) + "</br>" + "Viewable Impressions: " + add_commas(Math.round(d.view_imp)  + "</br>" + "Date: " + d.date))
+                div.html("Measured Impressions: " + add_commas(Math.round(d.measured_imp)) + "</br>" + "Viewable Impressions: " + add_commas(Math.round(d.view_imp))  + "</br>" + "Date: " + d.date)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -291,7 +353,7 @@
                 .style("opacity", 0.9)
             d3.select(this)
                 .style("opacity", 0.4)
-            div.html(Math.round(d.view_rate) + "%")
+            div.html("View Rate: " + d.view_rate.toFixed(2) + "%")
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 28) + "px");
         };
@@ -325,7 +387,7 @@
 
 
         area.append("path")
-            .datum(arr)
+            .datum(filtered_arr)
             .transition()
             .duration(300)
             .attr("opacity",0)
@@ -340,7 +402,7 @@
 
 
       area.selectAll(".bar")
-        .data(arr)
+        .data(filtered_arr)
         .enter()
         .append("rect")
         .attr("class","bar")
@@ -356,7 +418,7 @@
         .on("mouseout", mouseOutBar);
 
        area.selectAll("circle")
-          .data(arr)
+          .data(filtered_arr)
           .enter()
           .append("circle")
           .attr("id", "endPoints")
@@ -373,7 +435,7 @@
 
 
         area.append("path")
-            .datum(arr)
+            .datum(filtered_arr)
             .transition()
             .duration(300)
             .attr("opacity",0)

@@ -245,7 +245,7 @@
          }
     }
 
-       console.log('arr', arr)
+       console.log('filtered_arr', filtered_arr)
    
 
        // chart dimensions
