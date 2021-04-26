@@ -277,11 +277,12 @@
             
         // LEGEND // 
 
+     
         var legends = d3.select("#legend")
         .append("div")
         .attr("class", "legend_container")
-        .attr("width", dimensions.width)
-        .attr("height", dimensions.height)
+        // .attr("width", dimensions.width)
+        // .attr("height", dimensions.height)
 
         var legend_div = legends.append("svg")
         .attr("width", dimensions.width)
@@ -302,8 +303,16 @@
             txt_width_so_far += c + 2
             txt_width.push(txt_width_so_far)
         }
-     
 
+        let area_ids = []
+        let checkbox_ids = [] 
+
+        for (let i = 0; i < area_chart_elem.length; i++){
+            let checkbox_id = "checkbox_" + i
+            checkbox_ids.push(checkbox_id)
+        }
+    
+     
 
         let dim = 10
         legend_div.selectAll("keys")
@@ -314,8 +323,23 @@
             .attr("y", 10) 
             .attr("width", dim)
             .attr("height", dim)
+            .attr("id",function(d, i){checkbox_ids[i]})
             .attr("class", "legend_container")
-            .style("fill",  d => legend_colorScale(d))
+            .attr("fill", legend_colorScale)
+        .on("click", function(d, i){
+            let currentColor =  d3.select(this).style("opacity") 
+            d3.select(this).transition().style("opacity", currentColor == 0.4 ? 1 : 0.4);
+            let currentOpacity = d3.select("#area_"+ [i]).style("opacity")
+                d3.select("#area_" + [i]).transition().style("opacity", currentOpacity == 0.8 ? 0:0.8)
+            
+        })
+
+        .on("mouseover", function(d) {
+            d3.select(this).style("cursor", "pointer"); 
+          })
+        .on("mouseout", function(d) {
+        d3.select(this).style("cursor", "default"); 
+        })
 
         legend_div.selectAll("labels")
         .data(legend_keys)
@@ -409,6 +433,20 @@
                 .tickFormat("")
             )
 
+        var clip = bounds.append("defs").append("svg:clipPath")
+        .attr("id", "clip")
+        .append("svg:rect")
+        .attr("width", dimensions.boundedWidth)
+        .attr("height", dimensions.boundedHeight)
+        .attr("stroke", "none")
+        .attr("x", 0)
+        .attr("y", 0);
+
+
+        // craete one group for all the "marks"
+        var area = bounds.append("g")
+            .attr("class", "areas")
+            .attr("clip-path", "url(#clip)")
 
         function mouseOnLine(d) {
             div.transition()
@@ -431,28 +469,15 @@
 
 
         // create a frame/mask to crop the chart when zoming-in (for the brush feature)
-        var clip = bounds.append("defs").append("svg:clipPath")
-            .attr("id", "clip")
-            .append("svg:rect")
-            .attr("width", dimensions.boundedWidth)
-            .attr("height", dimensions.boundedHeight)
-            .attr("stroke", "none")
-            .attr("x", 0)
-            .attr("y", 0);
-
-        // brush feature (select an area in the chart to zoom-in)
+        
         var brush = d3.brushX()
-            .extent([
-                [0, 0],
-                [dimensions.boundedWidth, dimensions.boundedHeight]
-            ])
-            .on("end", updateChart)
+        .extent([
+            [0, 0],
+            [dimensions.boundedWidth, dimensions.boundedHeight]
+        ])
+        .on("end", updateChart)
 
-        // craete one group for all the "marks"
-        var area = bounds.append("g")
-            .attr("class", "areas")
-            .attr("clip-path", "url(#clip)")
-
+            
         const curve = d3.curveLinear
 
         // First area (partner)
@@ -462,7 +487,6 @@
             .y1(d => yScale(yAccessor(d)))
             .curve(curve)
 
-            let area_ids = []
             let area_id;
             for (let i = 0; i < area_chart_elem.length; i++){
                 area_id = "area_" + i
@@ -511,7 +535,11 @@
                 .attr("d", mainPath)          
         }
 
-   
+        area
+        .append("g")
+        .attr("class", "brush")
+        .call(brush);
+        
         area.selectAll("line")
             .data(filtered_arr)
             .enter()
@@ -538,7 +566,6 @@
             .y(d => y2Scale(y2Accessor(d)))
             .curve(curve2)
 
-        // passing arr because we want to show the engagement rate of all 4 partners
         area.append("path")
             .data(filtered_arr)
             .attr("class", "ctrLine")
@@ -548,6 +575,7 @@
             .attr("opacity", 0.7)
             .attr("d", line1(filtered_arr))
 
+       
         // Engagement rate average line
         const avgLine_y = bounds.append("line")
             .attr("y1", d => y2Scale(average_y2(d)))
@@ -608,57 +636,32 @@
                 .tickFormat(formatDate2))
 
             area
-                .select('.area1')
+                .selectAll('.areaGroup')
                 .transition()
                 .duration(1000)
-                .attr("d", path1)
-            area
-                .select('.area2')
-                .transition()
-                .duration(1000)
-                .attr("d", path2)
-            area
-                .select('.area3')
-                .transition()
-                .duration(1000)
-                .attr("d", path3)
-            area
-                .select('.area4')
-                .transition()
-                .duration(1000)
-                .attr("d", path4)
+                .attr("d", mainPath)
+       
             area
                 .select('.ctrLine')
                 .transition()
                 .duration(1000)
-                .attr("d", line1(arr))
+                .attr("d", line1(filtered_arr))
         }
 
         bounds.on("dblclick", function() {
-            xScale.domain(d3.extent(arr, xAccessor))
+            xScale.domain(d3.extent(filtered_arr, xAccessor))
             xAxis.transition().call(d3.axisBottom(xScale)
                 .ticks(9)
                 .tickFormat(formatDate))
             area
-                .select('.area1')
+                .selectAll('.areaGroup')
                 .transition()
-                .attr("d", path1)
-            area
-                .select('.area2')
-                .transition()
-                .attr("d", path2)
-            area
-                .select('.area3')
-                .transition()
-                .attr("d", path3)
-            area
-                .select('.area4')
-                .transition()
-                .attr("d", path4)
+                .attr("d", mainPath)
+           
             area
                 .select('.ctrLine')
                 .transition()
-                .attr("d", line1(arr))
+                .attr("d", line1(filtered_arr))
         });
 
         const remove_zero = d => (d / 1e6) + "M";
