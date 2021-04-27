@@ -214,54 +214,16 @@
 
        var colors = ["#5EC7EB","#4e79a7","#d93251","#43beb8"];
 
-        
-        // condense WET code
+       var filtered_arr = []
+       for ( let i=0; i < arr.length ; i++){
+        for (let j=0; j < partnersArr.length ; j++){
+             if (arr[i].partner == partnersArr[j] ){
+                filtered_arr.push(arr[i])
+             }
+         }
+    }
 
-      
-        // if (document.querySelector('input[name="check"]')) {
-        //   document.querySelectorAll('input[name="check"]').forEach((elem) => {
-        //     elem.addEventListener("change", function() {
-        //       let check_1 = document.getElementById("check_1");
-        //       let check_2 = document.getElementById("check_2");
-        //       let check_3 = document.getElementById("check_3");
-        //       let areas = document.getElementById(area_ids);
-
-        //           if (check_1.checked == false ){
-        //             areas.style.opacity = "0";
-        //             areas.style.transition = "opacity .7s linear";
-        //             // area1.style.visibility = "hidden";
-        //           }
-        //           if (check_2.checked == false ){
-        //             // area2.style.visibility = "hidden";
-        //             areas.style.opacity = "0";
-        //             areas.style.transition = "opacity .7s linear";
-
-        //           }
-        //           if (check_3.checked == false ){
-        //             // area3.style.visibility = "hidden";
-        //             area3.style.opacity = "0";
-        //             area3.style.transition = "opacity .7s linear";
-
-        //           }
-        //           if (check_1.checked == true ){
-        //             area1.style.opacity = ".9";
-        //             area1.style.transition = "visibility 0s .7s, opacity .7s linear";
-        //             // area1.style.visibility = "visible";
-        //           }
-        //           if (check_2.checked == true ){
-        //             area2.style.opacity = ".9";
-        //             area2.style.transition = "visibility 0s .7s, opacity .7s linear";
-        //             // area2.style.visibility = "visible";
-        //           }
-        //           if (check_3.checked == true ){
-        //             area3.style.opacity = ".9";
-        //             area3.style.transition = "visibility 0s .7s, opacity .7s linear";
-        //             // area3.style.visibility = "visible";
-        //           }
-        //     });
-        //   });
-        // }
-
+        console.log("filtered_arr",filtered_arr)
 
         const width = d3.min([
             window.innerWidth * 0.95,
@@ -314,8 +276,15 @@
             txt_width.push(txt_width_so_far)
         }
 
-        console.log(txt_width)
+        let area_ids = []
+        let checkbox_ids = [] 
 
+        for (let i = 0; i < area_chart_elem.length; i++){
+            let checkbox_id = "checkbox_" + i
+            checkbox_ids.push(checkbox_id)
+        }
+
+      
         let dim = 10
         legend_div.selectAll("keys")
         .data(legend_keys)
@@ -325,8 +294,23 @@
             .attr("y", 10) 
             .attr("width", dim)
             .attr("height", dim)
+            .attr("id",function(d, i){checkbox_ids[i]})
             .attr("class", "legend_container")
-            .style("fill",  d => legend_colorScale(d))
+            .style("fill", legend_colorScale)
+        .on("click", function(d, i){
+            let currentColor =  d3.select(this).style("opacity") 
+            d3.select(this).transition().style("opacity", currentColor == 0.4 ? 1 : 0.4);
+            let currentOpacity = d3.select("#area_"+ [i]).style("opacity")
+                d3.select("#area_" + [i]).transition().style("opacity", currentOpacity == 0.8 ? 0:0.8)
+            
+        })
+
+        .on("mouseover", function(d) {
+            d3.select(this).style("cursor", "pointer"); 
+          })
+        .on("mouseout", function(d) {
+        d3.select(this).style("cursor", "default"); 
+        })
 
         legend_div.selectAll("labels")
         .data(legend_keys)
@@ -335,20 +319,10 @@
         .attr("y", 19)
         .attr("x",function(d, i){ return 38 + txt_width[i] * 6.5})
             .style("fill", "#1b261c")
-            .text(function(d){ return d})    
+            .text(function(d){ return capitalizeFirstLetter(d)})       
             .attr("text-anchor", "left")
             .attr("class", "legend_label")
 
-        legend_div.selectAll("rect")
-        // .on("click", click_legend)
-
-        function click_legend(){
-            area.transition()
-                .duration(400)
-                .style("opacity", 0);
-            d3.select(this)
-                .style("opacity", 1)
-        }
 
         const wrapper = d3.select("#wrapper")
             .append("svg")
@@ -369,21 +343,21 @@
             .style("opacity", 0);
 
         const xScale = d3.scaleTime()
-            .domain(d3.extent(area_chart_elem[0], xAccessor))
+            .domain(d3.extent(filtered_arr, xAccessor))
             .range([0, dimensions.boundedWidth])
 
         const yScale = d3.scaleLinear()
-            .domain(d3.extent(area_chart_elem[0], yAccessor))
+            .domain(d3.extent(filtered_arr, yAccessor))
             .range([dimensions.boundedHeight, 0])
             .nice()
 
         const y2Scale = d3.scaleLinear()
-            .domain(d3.extent(area_chart_elem[0], y2Accessor))
+            .domain(d3.extent(filtered_arr, y2Accessor))
             .range([dimensions.boundedHeight, 0])
             // .nice()
 
         const b_sizze = d3.scaleLinear()
-            .domain(d3.extent(arr, clicks))
+            .domain(d3.extent(filtered_arr, clicks))
             .range([2, 8])
 
 
@@ -475,12 +449,12 @@
             .attr("x", 0)
             .attr("y", 0);
 
-        // var brush = d3.brushX()
-        //     .extent([
-        //         [0, 0],
-        //         [dimensions.boundedWidth, dimensions.boundedHeight]
-        //     ])
-        //     .on("end", updateChart)
+        var brush = d3.brushX()
+            .extent([
+                [0, 0],
+                [dimensions.boundedWidth, dimensions.boundedHeight]
+            ])
+            .on("end", updateChart)
 
         var area = bounds.append("g")
             .attr("class","areas")
@@ -496,11 +470,8 @@
             .curve(curve)
 
 
-       
-       
    
             // create an id for every path
-        let area_ids = []
         let area_id;
         for (let i = 0; i < area_chart_elem.length; i++){
             area_id = "area_" + i
@@ -529,13 +500,13 @@
     }
 
         area
-        .append("g");
-        // .attr("class", "brush")
-        // .call(brush);
+        .append("g")
+        .attr("class", "brush")
+        .call(brush);
 
     
          area.selectAll("line")
-            .data(area_chart_elem[0])
+            .data(filtered_arr)
             .enter()
             .append("line")
             .attr("stroke-width", "2px")
@@ -558,17 +529,17 @@
             .curve(curve2)
 
         area.append("path")
-            .data(area_chart_elem[0])
+            .data(filtered_arr)
             .attr("class", "ctrLine")
             .attr("fill", 'none')
             .attr("stroke-width","0.4px")
             .attr("stroke", "#1B2326")
             .attr("opacity", 0.7)
-            .attr("d", line1(area_chart_elem[0]))
+            .attr("d", line1(filtered_arr))
 
 
         area.selectAll("circle")
-           .data(area_chart_elem[0])
+           .data(filtered_arr)
            .enter()
            .append("circle")
            .attr("class", "endPoints")
@@ -587,7 +558,7 @@
         //     .on("mouseover", highlight)
         //     .on("mouseout", noHighlight);
 
-        let average_y2 = d3.mean(area_chart_elem[0], y2Accessor).toFixed(2);
+        let average_y2 = d3.mean(filtered_arr, y2Accessor).toFixed(2);
       
         const avgLine_y = bounds.append("line")
             .attr("y1", y2Scale(average_y2))
@@ -653,7 +624,7 @@
 
 
             area
-                .select("area_0")
+                .selectAll('.areaGroup')
                 .transition()
                 .duration(1000)
                 .attr("d", mainPath)
@@ -661,12 +632,12 @@
         }
 
         bounds.on("dblclick", function() {
-            xScale.domain(d3.extent(arr, xAccessor))
+            xScale.domain(d3.extent(filtered_arr, xAccessor))
             xAxis.transition().call(d3.axisBottom(xScale)
             .ticks(10)
             .tickFormat(formatDate))
             area
-                .select("areaGroup")
+                .selectAll('.areaGroup')
                 .transition()
                 .attr("d", mainPath)
  
